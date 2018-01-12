@@ -2,6 +2,10 @@
 
 Existing technology. Tell more about Ask-Elle and related things? [@2017askelle]
 
+## A high-level overview of Ask-Elle's architecture
+
+The triangle
+
 ## Program matching
 
 One of the core components of Ask-Elle is a solver [FIXME: is this the right term?] that compares functions in order to determine whether they are equivalent. This is tricky business, as automatically comparing programs in general amounts to solving the halting problem.
@@ -22,14 +26,6 @@ You have drifted from the strategy in such a way that we can not help you any mo
 
 If the function is finished and the solver fails to identify it as a full solution, then Ask-Elle will resort to property-based testing. While this is not ideal, it gives a high degree of confidence in the correctness of the solution.
 
-### How it works in practice
+## Feedback generation
 
-We have seen the limitations of the solver, but how does it work in practice? [FIXME: statistics from the FP course].
-
-How many programs are found to be equivalent to the solution?
-
-How many programs are not recognized as equivalent, but pass the tests?
-
-It is probably difficult to ask previous questions for incomplete programs, as they cannot be tested (and if they can, it is not very useful, right?)...
-
-Say something about it.
+How does it work?
