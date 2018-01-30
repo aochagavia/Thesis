@@ -4,5 +4,12 @@ fp-practicals-ask-elle
 literature
 other_stuff
 proposal/bundle.md
+DataVisualization/img
+DataVisualization/data
 
 *.pdf
+.Rproj.user
+*.Rhistory
+
+# On the long run we should commit this directory
+solutions
