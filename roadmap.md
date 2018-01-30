@@ -1,32 +1,75 @@
 Progress
 ========
 
-# Cleanup data:
+# Write proposal
 
-* What to do about non-compiling programs? Right now we are ignoring them. Could we delete them?
-* Cleanup exercise 1 and others, if necessary (e.g. remove uses of `error`)
+Aim of our research: improve the ability of Ask-Elle to recognize user submissions
 
-# Identify possible refactorings to bring down the size of the sets
+Aim (technical):
+* The motor behind the ability of Ask-Elle to recognize submissions is through program transformations
+* Model solutions and user submissions are transformed into some kind of normal form, which is then compared
+* A submission is considered to match the solution whenever its normal form is syntactically equivalent to that of the model solution
+* By improving the normalization process we expect to increase recognition rate
 
-* How to proceed? There are lots of files and lots of normalized groups
+How?
+* Review existing transformations
+* Add style-based transformations
+* Add slicing
 
-# Proposal (old):
-* Is it realistic to aim for recognition + feedback? Askelle seems a bit immature. Maybe we need to aim less high?
-* Idea: automatic grading FP assignments, including style feedback? If that succeeds, we can go further. On the other hand... Why not just use HLint instead of making things so complicated?
-* Come up with model solutions and generally accepted refactorings beforehand
-* Measure the difference between the amount of recognized programs, before and after the refactorings
-* If time allows, produce hints that can be reported to users
+Measuring:
+* We measure the reduction in the amount of normalized groups per exercise
+
+Interesting use cases:
+* Style-related feedback, so students get hints related to style
+* Automatic grading (or computer-assisted grading)
+
+Current situation:
+* Buggy normalization
+* Even when fixed, it is quite basic
+
+# Interesting refactorings
+
+Identify reimplementations of common functions:
+
+* map
+* foldr
+
+Remove branches containing calls to `error`
+
+Take HLint output and apply it automatically?
+
+# Strategy
+
+Some exercises have tons of normalized groups. It makes sense to start working on the simple ones, in the hopes that that will result in transformations that will have an effect on the more complex ones. That way, when we are finished with the simple functions, we can go to the complex ones and have to deal with less normalized groups.
+
+# Additional features
+
+Keeping a trace of the transformations that have been applied
 
 # Interesting ideas for some day
-* Try to make my fork compatible with the master branch
-* Get IDEAS working and ensure that the output is the same as the output of norm
-* Proper support for list comprehensions (add them to the AST). This way we get to know the guts of Ask-Elle
-* Support do notation? Should be quite similar to list comprehensions
-* Check out the suggested refactorings from HLint
+* Ensure that everything integrates well with IDEAS
+* Proper support for list comprehensions (add them to the AST)
 
 # Done
-* Debugging function to show the refinement steps from `?` to the end goal (greedily takes the first step every time)
-* Debugging function to take the set of all normalized files in a directory
-* Ask-Elle able to run on exercises: 1...2
-* Pipeline to check all submissions against the model solutions and report the results
+
+Data cleanup:
+* Make broken programs compile again
+* Work together with Alejandro to restore programs when information is missing
+
+Ask-Elle (PR):
 * Hacky support for list comprehensions (works for checking, not for hinting)
+* Support for specifying additional imports for each exercise
+
+CLI:
+* Able to check all exercises
+* Debugging function to take the set of all normalized files in a directory
+* Debugging function to check all submissions against the model solutions and report the results
+
+# Done, but no longer in use
+
+Data cleanup:
+* Remove all branches using `error`
+
+CLI:
+* Debugging function to show the refinement steps from `?` to the end goal (greedily takes the first step every time)
+* Exercise checking by using IDEAS

@@ -1,42 +1,33 @@
 # Current state of affairs
 
-All exercises covered.
+Our `CLI.hs` code is able to analyze all student submissions. The reports show that there is probably something wrong with the current normalization code.
 
 # Approaches to checking
 
-Currently, there are two functions to check an exercise: `ideasCheckAndReport` and `normCheckAndReport`. Both take the same arguments and produce similar output. The main diference is that `checkAndReport` goes through the IDEAS framework, while `normalizeAndReport` does not. This results in the second being *much* (orders of magnitude) faster than the first. We *assume* that both produce the same results for all exercises, but we have been unable to test it because IDEAS runs into an infinite loop in exercise 3.
-
-Additionally, there is a function similar to `normCheckAndReport`, called `normalizeAndGroup`, which identifies groups of submissions that normalize to the same code.
+Currently, there are two functions to check an exercise `normCheckAndReport` and `normalizeAndGroup`. Both take the same arguments, but produce different output. The main diference is that `normalizeAndGroup` also reports the existing groups of submissions that normalize to the same code.
 
 You can use the functions mentioned above as shown below:
 
 ```haskell
-ideasCheckAndReport "../solutions/1" "../fp-practicals-ask-elle/2017-assignment1-lists/exercise1" imports1
 normCheckAndReport "../solutions/1" "../fp-practicals-ask-elle/2017-assignment1-lists/exercise1" imports1
 normalizeAndGroup "../solutions/1" "../fp-practicals-ask-elle/2017-assignment1-lists/exercise1" imports1
 ```
 
-# Solved problems
+# IDEAS
 
-We filter out type signatures after parsing Helium programs. This helps remove errors caused by users referring to unknown types (e.g. `Table`, `Row`, etc).
+Originally, we used the `IDEAS` framework to check an exercise. However, since we are only checking whether finished submissions correspond to the model solutions, it is faster and more reliable to compare them directly, without going through the ideas framework. In other words, using IDEAS is considerably slower and the integration with Ask-Elle is buggy. Therefore, we are no longer using it.
 
-Some functions, such as `intercalate`, cause compile errors in Helium. This can be solved by adding them to the environment (see `Language.Compiler.Helium.ImportEnvs`). Of course, you also need to add them to `preludeFeedback` afterwards.
+Some bugs:
 
-`NoType` error. Triggered when the name of the model function doesn't match the name of the exercise (e.g. if the exercise is `haskell.list.myreverse`, then the function must be `myreverse`).
+* Checking submissions that contain type signatures leads to infinite loops
+* Some files lead to infinite bugs
 
-# Observations
+Other issues:
 
-* In order for a function to be available to *Helium*, it needs to be specified in `Language.Compiler.Helium.ImportEnvs`, by providing the name and the type signature. Otherwise you get a compile error.
-* In order for a function to be available to *Ask-Elle*, it needs to be listed in `preludeFeedback` (in `PreludeS.hs`). Otherwise, any submission using that function will not be matched.
-* Two programs are considered equivalent if their normalised form is structurally equivalent
+* Program matching fails whenever a function is used that is not registered in the `preludeFeedback` function (see `PreludeS.hs`). No error message is displayed, so you need to make sure all functions you need are listed
+* The code to initialize an IDEAS exercise is quite involved
 
-Stuff unsupported by Ask-Elle:
-* List comprehensions
-* Do notation
-
-The answer functions must have the same name as the model function.
-
-# Questions
+# Solved questions
 
 ## Wat doet de `ns` parameter in de `normalise` functie (Language.Haskell.Equality)?
 
