@@ -8,11 +8,34 @@ The exercises supported by Ask-Elle consist of implementing functions. For insta
 
 One of the strengths of Ask-Elle is its ability to provide feedback and hints based only on a model solution. The teacher writes a solution for the exercise and Ask-Elle does the rest. This is very convenient, because it minimizes the work to set up the exercises.
 
-Besides helping *students* learn Haskell, Ask-Elle also helps *teachers* grade assignments. Using the same model solution, submitted exercises can be automatically checked for correctness. As courses get bigger, this is an advantage that we cannot underestimate.
+## Program matching
+
+In order to provide hints and check the correctness of student answers, Ask-Elle relies on program matching. That is, a mechanism to compare two programs and determine whether:
+
+1. They are equal;
+1. One is an incomplete version of the other;
+1. Nothing can be concluded.
+
+By using this technique, student answers can be compared to model solutions. In case a student answer turns out to be equal to the model solution, we know that the answer is correct. If it turns out to be an incomplete version of the model solution, we know that the student is on the right track and can therefore offer hints. If nothing can be concluded, Ask-Elle cannot offer any hints, but it will perform property-based testing instead so the student gets feedback regarding correctness.
+
+At the core of program matching is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as comparing the normal forms for equality. In this comparison, there is an option to make holes match everything, in order to enable incomplete programs to be matched to complete ones.
+
+As an example, consider the function `double :: [Int] -> [Int]`, which doubles each element in a list of integers. The implementations of the model solution, student answer and normalized version are shown below.
+
+```haskell
+-- Model solution
+double = map (* 2)
+
+-- Student answer
+double = map (\x -> 2 * x)
+
+-- Normalized version (similar for both)
+double = map (*) 2
+```
 
 ## Limitations
 
-A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming. On this regard, there are two limitations that stand out. We will discuss them below.
+A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming. On this regard, there are some limitations that stand out. We will discuss them below.
 
 ### No feedback regarding style
 
@@ -26,22 +49,64 @@ However, when the incomplete program does not follow the style of the model solu
 
 This is an undesirable limitation, considering that teaching good style is an integral part of programming courses and that style is often an important factor in the grading. Lack of knowledge may lead beginners to write complex code, while simpler solutions exist. Style-oriented hints seem particularly useful for them, as they would help remove unnecessary complexity.
 
-### Style-dependent program matching
+### Insufficient normalization
 
-The core of Ask-Elle's ability to provide hints and check the correctness of student answers is program matching. That is, a mechanism to determine that two programs are equal, or that one is an incomplete version of the other.
+The normalization procedure used by Ask-Elle is not yet very robust. Because of this, Ask-Elle is often unable to match two functions that are clearly identical. Take for instance a new version of the `double` function mentioned before:
 
-Program matching is a complex process that we will not describe here. For our purposes, the relevant part is that the current algorithm is not always able to determine equivalence between two functions or expressions. For instance, it is currently unable to know that `if x == True then y else z` is equivalent to `if x then y else z`.
+```haskell
+-- Original program
+double = map (\x -> x * 2)
 
-Whenever program matching fails, Ask-Elle is unable to provide hints and guide the user towards the solution. In such cases, an error message is shown instead: `You have drifted from the strategy in such a way that we can not help you any more`.
+-- Normalized
+double = map (\x -> (*) x 2)
 
-It turns out that failure in program matching is often triggered by bad style, a common problem among beginners (see Chapter [3](#results) for details). While the problem is somewhat alleviated by performing property-based testing on the functions, it is unfortunate that the user cannot get any hints because of style issues.
+-- Desired normalization
+double = map (*) 2
+```
 
-## The solution
+In this example, the desired normalization involves performing eta reduction. However, eta reduction in this case requires reordering the arguments from `(*) x 2` to `(*) 2 x`. This is perfectly fine, because `(*)` is commutative, but Ask-Elle is unable to leverage that information.
 
-We propose extending Ask-Elle with a mechanism to reason about style. This should allow Ask-Elle to produce style-aware hints and to increase the success rate of program matching.
+Besides insufficient transformations to match programs that are clearly equivalent, Ask-Elle lacks transformations that enable matching more complex programs. For instance, it is unable remove superfluous pattern matching:
 
-TODO: how are we actually going to do this?
+```haskell
+-- Original program
+double [] = []
+double xs = map (* 2) xs
 
-As far as I know, limitation 1 is kind of binary. If your style is decent, you get feedback. If your style is bad, you don't. There is no gradual quality decrease. In the first case, making Ask-Elle style-aware has no benefit. In the second, it allows showing feedback in situations where there used to be none. Therefore we cannot measure the improvement in feedback quality. However, we can measure the improvement in the amount of cases when the student can get feedback. That is, the difference in the amount of failed program matching before and after introducing this feature.
+-- Normalized
+double = \y1 -> case y1 of
+                    [] -> []
+                    x1 -> map (*) 2 x1
 
-Regarding limitation 2, we can measure the improvement in program matching by testing against the set of submissions from assignment one.
+-- Desired normalization
+double = map (*) 2
+```
+
+Considering that superfluous pattern matching is a common anti-pattern among beginners, it is unfortunate that the user cannot get any hints because of these style issues. In this regard, the lack of complex transformations has a clear impact in the user experience.
+
+## Proposed solution
+
+In the light of the limitations mentioned above, we propose to improve Ask-Elle's normalization procedure so more programs can be matched, including those that present anti-patterns. Below we describe our approach.
+
+### Data analysis
+
+The first step in our research consists of analyzing a set of student programs. From this analysis, we expect to identify the main style and normalization issues that prevent Ask-Elle from doing its job.
+
+Our dataset consists of 111 correct submissions to the first assignment of the functional programming course at Universiteit Utrecht. The assignment requires implementing 8 functions, which translate to 8 Ask-Elle exercises. In total, we get 888 programs we can feed to Ask-Elle.
+
+### Adding new transformations
+
+Based on the analysis mentioned above, we intend to come up with new transformations that improve Ask-Elle's ability to match programs. In this stage, we will focus on finding transformations that help in two fronts:
+
+* Make normalization behave as expected in simple cases.
+* Improve normalization of programs with style issues.
+
+Besides discovering interesting transformations, it will be necessary to figure out how they fit in Ask-Elle's architecture and implement them.
+
+### Measuring
+
+Measuring the quality of Ask-Elle's normalization is done on a per-exercise basis. For each exercise, we will take the 111 submissions, normalize them and cluster them.
+
+Since all submissions are correct programs, an ideal normalization strategy should result in a few big clusters, which means that all similar programs have been transformed to the same normal form. Because of this, we are going to measure the amount of clusters per exercise and their size.
+
+With this information, we can compare the state of Ask-Elle's normalization at two different points in time. We only need to generate the clusters for each exercise and then compare the results. We expect our research to contribute to a lower amount of clusters while increasing their size.

@@ -1,27 +1,49 @@
 # Preliminary results {#results}
 
-## Measuring the impact of limitations 1 and 2
+Note: use a bubble chart!
 
-### People giving up because of style issues
+Other ideas: pie chart with ranges (singleton, 2, < 4, < 8, < 16, < 32, < 64)
 
-Interactions through the web interface. How many people give up or have to start again because of style issues (limitation 1)?
+I like the pie chart with ranges!
 
-It seems tricky to check style on incomplete programs. For instance, if the model solution expects you to use `concatMap` but you start with `concat ?`, you are no longer on the way to the model solution. Also, using concat is not a problem from a style perspective, so there is no style feedback you can use here. You would only get feedback when you use `concat (map ? ?)`.
+8 pie charts in one page vs 4 in two pages
 
-### Causes of program matching failure
+Need to figure out how to generate them from r
 
-We analyze data from the Functional Programming course at Universiteit Utrecht.
+## Modifications to Ask-Elle
 
-The first assignment of the course consists: 111 submissions, 8 functions each (therefore 888 exercises). Note: would it be sensible to use sampling in order to bring down the amount of stuff to analyze? On the other hand, I think I should have enough time.
+Imports
 
-Interactions through the web interface.  How many people reach a full answer that is not matched because of style issues (limitation 2)?
+List comprehensions
 
-## Approach to offering refactoring hints
+## Establishing a baseline
 
-What examples can you handle already?
+Exercise number  Groups Big groups Small groups Singleton groups
+---------------  ------ ---------- ------------ ----------------
+1                12     1          1            1
+2                123    2          1            1
+3                1000   3          1            1
+----------------------------------------------------------------
 
-What prototype have I built?
+## Some interesting transformations to look at
 
-How can I generalize these results? What problems have I identified or do I expect?
+By looking at the first exercise...
 
-Performance problems?
+Superfluous base cases (matching on empty list when using map)
+
+Sort argument when applying commutative functions (i.e. `(*) 3 2` always becomes `(*) 2 3`):
+* Define and enforce an ordering on expressions
+* Question. Is this really necessary for our exercises? It seems easy to implement... Maybe still interesting to begin with
+
+Identify reimplementations of common functions:
+
+* map
+* foldr
+
+Remove branches containing calls to `error`
+
+We expect to discover additional transformations during our research, as we will have time to analyze the rest of the exercises.
+
+## Normalization bugs
+
+Any bugs there? Probably...

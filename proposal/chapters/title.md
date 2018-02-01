@@ -1,3 +1,3 @@
-% Ask-Elle meets refactoring
+% Style-aware normalization for Ask-Elle
 % Adolfo Ochagavía
-% December 2017
+% February 2017
