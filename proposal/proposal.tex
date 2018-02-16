@@ -1,0 +1,921 @@
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[a4paperpaper,]{report}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\usepackage{hyperref}
+\hypersetup{
+            pdftitle={Style-aware normalization for Ask-Elle},
+            pdfauthor={Adolfo Ochagavía},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{longtable,booktabs}
+% Fix footnotes in tables (requires footnote package)
+\IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{longtable}}{}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+\makeatletter
+\@ifpackageloaded{subfig}{}{\usepackage{subfig}}
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\captionsetup[subfloat]{margin=0.5em}
+\AtBeginDocument{%
+\renewcommand*\figurename{Figure}
+\renewcommand*\tablename{Table}
+}
+\AtBeginDocument{%
+\renewcommand*\listfigurename{List of Figures}
+\renewcommand*\listtablename{List of Tables}
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+
+\title{Style-aware normalization for Ask-Elle}
+\author{Adolfo Ochagavía}
+\date{February 2017}
+
+\begin{document}
+\maketitle
+
+\hypertarget{introduction}{%
+\chapter{Introduction}\label{introduction}}
+
+Ask-Elle {[}5{]} is a programming tutor designed to help students learn
+the Haskell programming language. With Ask-Elle, teachers can specify
+exercises along with model solutions and students can solve them
+interactively. During the process, the system is able to check whether a
+student is on the right track and, in case they get stuck, it can
+provide relevant hints. Afterwards, it can check whether the provided
+solution is correct.
+
+The exercises supported by Ask-Elle ask to implement functions. For
+instance, an exercise to teach basic concepts around lists and recursion
+could be to implement the \texttt{length} function.
+
+One of the strengths of Ask-Elle is its ability to provide feedback and
+hints based only on a model solution. The teacher writes a solution for
+the exercise and Ask-Elle does the rest. This is very convenient,
+because it minimizes the work to set up the exercises.
+
+\hypertarget{program-matching}{%
+\section{Program matching}\label{program-matching}}
+
+In order to provide hints and check the correctness of student answers,
+Ask-Elle relies on program matching. That is, a mechanism to compare two
+programs and determine whether:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  They are equal;
+\item
+  One is an incomplete version of the other;
+\item
+  Nothing can be concluded.
+\end{enumerate}
+
+By using this technique, student answers can be compared to model
+solutions. In case a student answer turns out to be equal to the model
+solution, we know that the answer is correct. If it turns out to be an
+incomplete version of the model solution, we know that the student is on
+the right track and can offer them hints. If nothing can be concluded,
+Ask-Elle cannot offer any hints, but it will perform property-based
+testing so the student gets feedback regarding correctness.
+
+At the core of program matching is the idea of normalization. Before
+comparing the programs, they go through a series of semantics-preserving
+transformations that result in a normal form. This way, comparing the
+programs becomes as simple as comparing the resulting normal forms for
+equality. In this comparison, there is an option to make holes match
+everything, so that incomplete programs can be matched to complete ones.
+
+As an example, consider the function
+\texttt{double\ ::\ {[}Int{]}\ -\textgreater{}\ {[}Int{]}}, which
+doubles each element in a list of integers. The model solution, student
+answer and normalized version are shown below.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{-- Model solution}
+\NormalTok{double }\FunctionTok{=}\NormalTok{ map (}\FunctionTok{*} \DecValTok{2}\NormalTok{)}
+
+\CommentTok{-- Student answer}
+\NormalTok{double }\FunctionTok{=}\NormalTok{ map (\textbackslash{}x }\OtherTok{->} \DecValTok{2} \FunctionTok{*}\NormalTok{ x)}
+
+\CommentTok{-- Normalized version (similar for both)}
+\NormalTok{double }\FunctionTok{=}\NormalTok{ map ((}\FunctionTok{*}\NormalTok{) }\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{limitations}{%
+\section{Limitations}\label{limitations}}
+
+A typical use case for Ask-Elle is to aid teaching in an introductory
+course on functional programming. For this purpose, there are some
+limitations that stand out. We will discuss them below.
+
+\hypertarget{no-feedback-regarding-style}{%
+\subsection{No feedback regarding
+style}\label{no-feedback-regarding-style}}
+
+Right now, the only criterion followed by Ask-Elle when providing hints
+is whether the next step brings the program closer to one of the model
+solutions. On a fundamental level, Ask-Elle does not care about the
+beauty of the code, as normalization is blind to it.
+
+In this light, the current approach to encourage a good programming
+style consists of enforcing it through well-chosen model solutions. If
+the style of a model solution is good, the hints will lead to a program
+with good style.
+
+The aforementioned approach is limited, because it only provides hints
+when a student is already on the right track. However, when an
+incomplete program does not follow the style of the model solution,
+Ask-Elle is unable to come up with suggestions or hints. This happens
+because Ask-Elle can only reason about what needs to be \emph{added} to
+a program, while style improvements often require \emph{refactoring} a
+program.
+
+In cases where a given anti-pattern is widespread between the students,
+it is possible to work around the previous limitation by adding a model
+solution that makes use of said anti-pattern. This way, a student can
+receive hints even when their solution does not adhere to the style
+guidelines. Still, this is hardly a viable option as it requires
+predicting all the style problems that a program may present.
+
+Ask-Elle's blindness to style is an undesirable limitation, considering
+that teaching good style is an integral part of programming courses and
+that style is often an important factor in the grading. Lack of
+knowledge may lead beginners to write complex code, while simpler
+solutions exist. Style-oriented hints seem particularly useful for them,
+as they would help remove unnecessary complexity.
+
+\hypertarget{style-unaware-normalization}{%
+\subsection{Style-unaware
+normalization}\label{style-unaware-normalization}}
+
+Ask-Elle's normalization procedure is designed to handle only small
+syntactical differences. Two programs can only be transformed to the
+same normal form if they follow the same style. As we saw above, this
+causes problems when attempting to provide hints for a program that
+diverges too much from its model solution. Let us consider again the
+\texttt{double} function, this time implemented in a recursive way:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{-- Original program}
+\NormalTok{double [] }\FunctionTok{=}\NormalTok{ []}
+\NormalTok{double (x}\FunctionTok{:}\NormalTok{xs) }\FunctionTok{=}\NormalTok{ (x }\FunctionTok{*} \DecValTok{2}\NormalTok{) }\FunctionTok{:}\NormalTok{ double xs}
+
+\CommentTok{-- Normalized}
+\NormalTok{double }\FunctionTok{=}\NormalTok{ \textbackslash{}y1 }\OtherTok{->} \KeywordTok{case}\NormalTok{ y1 }\KeywordTok{of}
+\NormalTok{    [] }\OtherTok{->}\NormalTok{ []}
+\NormalTok{    (x1 }\FunctionTok{:}\NormalTok{ x2) }\OtherTok{->}\NormalTok{ (}\FunctionTok{:}\NormalTok{) ((}\FunctionTok{*}\NormalTok{) x1 }\DecValTok{2}\NormalTok{) (double x2)}
+\end{Highlighting}
+\end{Shaded}
+
+It takes little time to see that this is basically a specialized
+reimplementation of map. Therefore it would be interesting to see it
+normalized as such:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{-- Desired normalization}
+\NormalTok{double }\FunctionTok{=}\NormalTok{ map ((}\FunctionTok{*}\NormalTok{) }\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Considering that reimplementing map is a common anti-pattern among
+beginners, it is unfortunate that they cannot get any hints in the
+presence of this style issue. In this regard, the lack of style-aware
+transformations has a clear impact on the user experience.
+
+\hypertarget{proposed-solution}{%
+\section{Proposed solution}\label{proposed-solution}}
+
+On the long term, it seems worthwhile to enhance Ask-Elle with
+style-aware feedback and normalizations. Both features are closely
+related, as they both need to recognize the presence of style
+anti-patterns: the former, to report them; the latter, to normalize
+them. From the two, we think that normalization has a higher priority,
+since it enables giving hints in situations that were previously
+unsupported. We also expect most of the work on normalization to be
+reused when implementing style-aware feedback.
+
+In light of the previous considerations, we propose to:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Identify the main style issues that prevent Ask-Elle from matching
+  semantically equivalent programs;
+\item
+  Add new transformations to improve normalization of programs that
+  present those issues;
+\item
+  Assess the improvements in program matching derived from the new
+  transformations.
+\end{enumerate}
+
+Below we describe our methodology.
+
+\hypertarget{data-analysis}{%
+\subsection{Data analysis}\label{data-analysis}}
+
+The steps described above require having a set of programs, which we can
+analyze to find style issues and which we can feed to Ask-Elle to assess
+the quality of program matching. In our investigation, we rely on a
+dataset of 111 correct submissions to the first assignment of the
+functional programming course at Universiteit Utrecht. The assignment
+requires implementing 8 functions, which translate to 8 Ask-Elle
+exercises. This means that we get 888 programs we can feed to Ask-Elle.
+
+Measuring the quality of Ask-Elle's normalization is done on a
+per-exercise basis. For each exercise, we take the 111 submissions,
+normalize them and cluster them in groups that have the same normal
+form. Since all submissions are correct programs, an ideal normalization
+strategy should result in a few big clusters, which means that all
+similar programs have been transformed to the same normal form. This is
+equivalent to saying that Ask-Elle should be able to match many programs
+with a small number of model solutions. Because of this, we measure the
+amount of clusters per exercise and the size of each cluster.
+
+The clustering information mentioned in the previous paragraph serves as
+a basis to:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Identify programs that form their own cluster because of style issues:
+  from these programs we expect to infer transformations that would
+  improve normalization;
+\item
+  Compare the quality of the normalization procedure across different
+  versions of Ask-Elle: this is particularly useful when assessing the
+  effect of adding a transformation.
+\end{enumerate}
+
+A first measurement of the amount of clusters and their size can be
+found in \protect\hyperlink{results}{Chapter 3}.
+
+\hypertarget{adding-transformations}{%
+\subsection{Adding transformations}\label{adding-transformations}}
+
+The measurements described in the previous section focus only on the
+effect of a transformation, instead of its quality. From this
+perspective, there is no distinction between a transformation that is
+tailored to our dataset and one that is applicable to a broader range of
+programs. Since the goal of this project is to improve Ask-Elle's
+normalization in the general case, it is crucial to avoid ad-hoc
+transformations. For this purpose, we only consider adding a
+transformation when it is:
+
+\begin{itemize}
+\tightlist
+\item
+  Mentioned in the literature or;
+\item
+  Recognized as general-purpose by a group of experts.
+\end{itemize}
+
+\hypertarget{related-work}{%
+\chapter{Related work}\label{related-work}}
+
+On a fundamental level, our research is aimed at improving program
+classification. Our goal is to identify groups of programs that are
+similar to each other, despite their syntactical differences. A key
+element in this process is program analysis, which in our case makes
+heavy use of normalization techniques.
+
+Since we are using semantics-preserving transformations in order to
+compare programs, it is also necessary to make a choice about the
+transformations we want Ask-Elle to support. This project focuses mainly
+on style-related transformations, which leads us to draw inspiration
+from related work on linting and refactoring.
+
+\hypertarget{related-work-in-program-analysis}{%
+\section{Related work in program
+analysis}\label{related-work-in-program-analysis}}
+
+We are interested in proving whether two programs are equivalent. This
+requires not only having a certain definition of equality, but also
+obtaining information from the programs in order to check whether the
+conditions for equality hold. Gathering information about a program is
+the subject of program analysis, which is used pervasively in automated
+assessment tools {[}1{]}.
+
+Since program analysis can be classified as static or dynamic, the same
+holds for the feedback tools that rely on it. While in the past there
+used to be a clear distinction between static and dynamic tools {[}9{]},
+it is nowadays less clear, as many tools are combining both approaches.
+For instance, Codewebs {[}11{]} and the tool presented by Huang et al.
+{[}8{]} are based on a combination of testing and static analysis.
+Another example is OverCode {[}6{]}, which collects data from the
+execution of Python programs (dynamic) and combines it with data derived
+from the source code (static). Ask-Elle also uses a mixed approach,
+since it first tries a normalization approach (static) and resorts to
+property-based testing (dynamic) whenever the former is insufficient
+{[}5{]}.
+
+This project is focused towards improving Ask-Elle's static analysis
+capabilities, particularly its normalization procedure. From the tools
+mentioned above, Codewebs and Huang rely on AST-based comparisons
+instead of transformations. OverCode goes a bit further, by renaming
+variables based on the output of dynamic analysis, but this is still far
+from proper normalization.
+
+Relevant research on automatic assessment tools that rely on program
+normalization include Xu and Chee's work {[}16{]}, who apply this method
+to compare Smalltalk programs. Also interesting is the work of Wang et
+al. {[}15{]}, who implement a normalization-based tool to assess C
+programs. A more modern approach is given by the ITAP tutoring system
+{[}12{]}, targeting Python programs, which uses normalization as well.
+
+From the tools mentioned, the most interesting for our purposes is ITAP,
+because it also supports style-based transformations tailored to
+beginners. This is exactly one of the features we want Ask-Elle to
+support. Besides this, ITAP supports reconstructing the original AST
+from its normalized form in order to produce localized feedback,
+including suggestions to refactor the code. This is something we could
+draw inspiration from when implementing style-related hints.
+
+\hypertarget{related-work-in-normalization}{%
+\section{Related work in
+normalization}\label{related-work-in-normalization}}
+
+The Haskell language can be seen as a user-friendly version of the
+lambda calculus, with a series of extensions and syntactic sugar to
+facilitate programming. In fact, GHC Core, the intermediate language
+used by the Glasgow Haskell Compiler, is itself an implementation of the
+lambda calculus variant known as System FC {[}13{]}. This means we can
+leverage research on normalization of lambda terms when adding new
+transformations to Ask-Elle.
+
+An overview of the properties of the lambda calculus is given by
+Barendregt et al. {[}2{]}. They focus on the logical properties of the
+lambda calculus, which give us a clear idea of the limits within we
+operate. The main consequence for our work is that true normalization is
+impossible to achieve, because it is undecidable.
+
+Even though normalization is undecidable in general, it can still be
+decided in some particular cases. Our own research is a clear example of
+this, as Ask-Elle relies on the ability to match student programs and
+model solutions. Different approaches have been tried to determine
+whether two lambda terms are equivalent, each one with its own
+trade-offs. For instance, Grabmayer and Rochel {[}7{]} describe an
+advanced mechanism based on program transformations and graph
+comparison. We expect to find inspiration in this kind of research to
+improve Ask-Elle's own normalization.
+
+\hypertarget{related-work-in-linting-and-refactoring}{%
+\section{Related work in linting and
+refactoring}\label{related-work-in-linting-and-refactoring}}
+
+The topic of Haskell refactoring has been extensively handled by Brown
+{[}4{]}, together with Thompson and Li {[}14{]}, though mainly from the
+perspective of a refactoring tool. This is reflected in some of the
+refactorings that are described, such as adding a constructor to a data
+type or introducing pattern matching. They also mention some style
+refactorings, like finding and replacing redefinitions of common
+functions.
+
+More interesting to our purposes is HLint {[}10{]}, a tool that analyzes
+Haskell programs and reports ways in which style can be improved. It
+includes a broad corpus of style-refactorings, from detecting list
+anti-patterns to suggesting using foldr whenever certain recursion
+strategies are detected. Ask-Elle can draw a lot of inspiration from
+HLint on the area of style-aware feedback and can even go a step
+further, by giving hints on programs that contain holes.
+
+\hypertarget{results}{%
+\chapter{Preliminary results}\label{results}}
+
+\hypertarget{adapting-ask-elle}{%
+\section{Adapting Ask-Elle}\label{adapting-ask-elle}}
+
+In order to establish a baseline we had to run Ask-Elle on each of the
+student submissions. In this process we had to overcome a series of
+obstacles derived from the current implementation of Ask-Elle. Below we
+describe them in detail.
+
+\hypertarget{batch-processing}{%
+\subsection{Batch processing}\label{batch-processing}}
+
+Ask-Elle is designed as an interactive tutoring system that is used
+through a web interface. However, our use case was feeding 888 student
+submissions, each one with its own file. The web interface was clearly
+unsuitable for the task, so we had to look for an alternative.
+
+Leveraging Ask-Elle's modular design, we reused the existing code and
+developed a tool to:
+
+\begin{itemize}
+\tightlist
+\item
+  Normalize all submissions of an exercise
+\item
+  Identify groups of submissions that have the same normal form
+\item
+  Output relevant statistics
+\end{itemize}
+
+\hypertarget{support-for-list-comprehensions}{%
+\subsection{Support for list
+comprehensions}\label{support-for-list-comprehensions}}
+
+At the beginning of this project, Ask-Elle lacked support for list
+comprehensions. Instead, it would crash whenever a program contained a
+list comprehension. This was a problem because many of the student
+submissions used this feature. With little knowledge about the codebase,
+adding proper support for list comprehensions would have taken too much
+time. Therefore we chose to support them partially, by enabling
+normalization of list comprehensions. While Ask-Elle still does not
+support list comprehensions through the interactive tutor, our
+command-line tool does, which is enough for this project.
+
+\hypertarget{support-for-functions-defined-outside-the-prelude}{%
+\subsection{Support for functions defined outside the
+prelude}\label{support-for-functions-defined-outside-the-prelude}}
+
+When attempting to feed the student programs to Ask-Elle, we discovered
+that it lacked support for functions that are not in the prelude. We
+fixed the problem by creating special compiler options, including the
+possibility to specify a list of functions that are brought into scope.
+This was the most difficult feature to add, as we had to figure out how
+to modify some undocumented modules of Ask-Elle. While our
+implementation is properly modularized, it is only being used by our
+command-line tool right now. However, it should be easy to enable in the
+web version if desired.
+
+\hypertarget{establishing-a-baseline}{%
+\section{Establishing a baseline}\label{establishing-a-baseline}}
+
+After fixing the problems mentioned above we were able to feed the 888
+solutions to Ask-Elle. For each exercise, we clustered the solutions
+according to their normalized form, identified the amount of groups and
+classified them according to their size.
+
+The table below shows, for each exercise, the total amount of groups
+that were found. It also shows the size of each of them, starting with
+singleton groups up to groups consisting of more than 64 programs. Note
+that larger groups are better, since they handle more submissions.
+
+\begin{longtable}[]{@{}llllllllll@{}}
+\toprule
+Exercise number & Groups & 1 & 2 & 3-4 & 5-8 & 9-16 & 17-32 & 33-64 &
+\textgreater{}64\tabularnewline
+\midrule
+\endhead
+1 & 15 & 9 & 2 & 1 & 1 & 1 & 0 & 0 & 1\tabularnewline
+2 & 64 & 47 & 8 & 6 & 2 & 0 & 1 & 0 & 0\tabularnewline
+3 & 51 & 39 & 8 & 1 & 0 & 2 & 1 & 0 & 0\tabularnewline
+4 & 41 & 30 & 3 & 4 & 3 & 0 & 0 & 1 & 0\tabularnewline
+5 & 43 & 28 & 2 & 9 & 1 & 2 & 1 & 0 & 0\tabularnewline
+6 & 107 & 103 & 4 & 0 & 0 & 0 & 0 & 0 & 0\tabularnewline
+7 & 96 & 85 & 8 & 3 & 0 & 0 & 0 & 0 & 0\tabularnewline
+8 & 87 & 76 & 6 & 3 & 2 & 0 & 0 & 0 & 0\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{identifying-useful-program-transformations}{%
+\section{Identifying useful program
+transformations}\label{identifying-useful-program-transformations}}
+
+Given the sheer amount of information obtained after running our
+command-line tool, we decided to focus only on the first exercise for
+this research proposal. This exercise consists of implementing the
+function \texttt{parseTable}, which could be implemented as shown below:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\OtherTok{parseTable ::}\NormalTok{ [}\DataTypeTok{String}\NormalTok{] }\OtherTok{->}\NormalTok{ [[}\DataTypeTok{String}\NormalTok{]]}
+\NormalTok{parseTable }\FunctionTok{=}\NormalTok{ map words}
+\end{Highlighting}
+\end{Shaded}
+
+The three biggest groups contain submissions that are variants of the
+following functions:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \texttt{parseTable\ =\ map\ words} (73 elements)
+\item
+  \texttt{parseTable\ xs\ =\ map\ words\ xs} (13 elements)
+\item
+  \texttt{parseTable\ xs\ =\ {[}words\ x\ \textbar{}\ x\ \textless{}-\ xs{]}}
+  (8 elements)
+\end{enumerate}
+
+Besides these groups, there are 13 other groups containing a total of 17
+submissions. We identified a series of program transformations that
+would help reduce the amount of groups down to four. They are discussed
+below.
+
+\hypertarget{irrelevant-code-elimination}{%
+\subsection{Irrelevant code
+elimination}\label{irrelevant-code-elimination}}
+
+Two of the programs ended up in their own singleton group because of
+having an unnecessary branch that calls the error function. Instead of
+the model solution discussed above, they implemented the function as
+shown below:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{parseTable [] }\FunctionTok{=}\NormalTok{ error }\StringTok{"Empty list"}
+\NormalTok{parseTable xs }\FunctionTok{=}\NormalTok{ map words xs}
+\end{Highlighting}
+\end{Shaded}
+
+Removing the branch that ends up calling \texttt{error} would have
+enabled this function to be recognized as part of one of the bigger
+groups. In principle, such a transformation is not semantics-preserving.
+However, the definition of the exercise stated that the parameter would
+never be the empty list. This is a case of \emph{irrelevant code
+elimination}, as described by Brown and Thompson {[}3{]}.
+
+\hypertarget{removing-redundant-pattern-matching}{%
+\subsection{Removing redundant pattern
+matching}\label{removing-redundant-pattern-matching}}
+
+Another four submissions were separated from the big groups because they
+performed unnecessary pattern matching. They are variations of the code
+below:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{parseTable [] }\FunctionTok{=}\NormalTok{ []}
+\NormalTok{parseTable xs }\FunctionTok{=}\NormalTok{ map words xs}
+\end{Highlighting}
+\end{Shaded}
+
+Since \texttt{map} is being used, matching on \texttt{{[}{]}} becomes
+unnecessary. Removing the match on the empty list would enable these
+submissions to be categorized as pertaining to one of the bigger groups.
+
+While HLint is able to recognize complex opportunities for refactoring,
+it fails to do so here. Still, we believe this is a general purpose
+refactoring that should be supported by Ask-Elle.
+
+\hypertarget{refactoring-reimplementations-of-map}{%
+\subsection{Refactoring reimplementations of
+map}\label{refactoring-reimplementations-of-map}}
+
+Two of the submissions consist of a specialized reimplementation of map,
+following the pattern below:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{parseTable [] }\FunctionTok{=}\NormalTok{ []}
+\NormalTok{parseTable (x}\FunctionTok{:}\NormalTok{xs) }\FunctionTok{=}\NormalTok{ words x }\FunctionTok{:}\NormalTok{ parseTable xs}
+\end{Highlighting}
+\end{Shaded}
+
+In this case, the ideal solution would be to transform the program to
+use \texttt{map} and suggesting such a refactoring to the user. Besides
+resulting in better style, it would allow these implementations to be
+recognized as part of one of the bigger groups.
+
+This refactoring is very common, as can be deduced from the fact that it
+is recognized by HLint:
+
+\begin{verbatim}
+> hlint test.hs
+
+test.hs:1:1: Warning: Use map
+Found:
+  parseTable [] = []
+  parseTable (x : xs) = words x : parseTable xs
+Why not:
+  parseTable xs = map words xs
+\end{verbatim}
+
+\hypertarget{refactoring-list-anti-patterns}{%
+\subsection{Refactoring list
+anti-patterns}\label{refactoring-list-anti-patterns}}
+
+Besides the submissions mentioned above, there are three other
+submissions that reimplement map, but present additional problems.
+Namely, that they make use of list anti-patterns.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{-- Concat with a singleton list on the left}
+\NormalTok{parseTable [] }\FunctionTok{=}\NormalTok{ []}
+\NormalTok{parseTable (x}\FunctionTok{:}\NormalTok{xs) }\FunctionTok{=}\NormalTok{ [words x] }\FunctionTok{++}\NormalTok{ parseTable xs}
+
+\CommentTok{-- Appending to an empty list instead of using a list literal}
+\NormalTok{parseTable [] }\FunctionTok{=}\NormalTok{ []}
+\NormalTok{parseTable (x}\FunctionTok{:}\NormalTok{xs) }\FunctionTok{=}\NormalTok{ (words x }\FunctionTok{:}\NormalTok{ []) }\FunctionTok{++}\NormalTok{ parseTable xs}
+
+\CommentTok{-- Using head and tail instead of pattern matching on xs}
+\NormalTok{parseTable [] }\FunctionTok{=}\NormalTok{ []}
+\NormalTok{parseTable xs }\FunctionTok{=}\NormalTok{ words (head xs) }\FunctionTok{:}\NormalTok{ parseTable (tail xs)}
+\end{Highlighting}
+\end{Shaded}
+
+The solution here would be to recognize and refactor those
+anti-patterns. Regarding the previous code examples, the following
+refactorings would be suitable:
+
+\begin{itemize}
+\tightlist
+\item
+  Replace \texttt{{[}x{]}\ ++\ xs} by \texttt{x\ :\ xs}
+\item
+  Replace \texttt{x\ :\ {[}{]}} by \texttt{{[}x{]}}
+\item
+  Introduce pattern matching whenever the combination of \texttt{head}
+  and \texttt{tail} is used, so \texttt{head\ xs} can become \texttt{x}
+  and \texttt{tail\ xs} is replaced by \texttt{xs}.
+\end{itemize}
+
+The first two refactorings are recognized by HLint, while the third is
+not. Still, we see replacing \texttt{head} and \texttt{tail} by pattern
+matching as a general purpose refactoring.
+
+\hypertarget{bugs}{%
+\section{Bugs}\label{bugs}}
+
+Besides new program transformations, there are some normalization steps
+that we expected to work but did not:
+
+\begin{itemize}
+\tightlist
+\item
+  No dead code removal: one of the submissions contained functions
+  intended for debugging during a REPL session. They should have been
+  automatically removed, as they were not used by \texttt{parseTable}.
+\item
+  No \texttt{where} inlining: some students used an auxiliary function
+  declared in a \texttt{where} clause which should have been inlined.
+\item
+  Mismatch between complete and partial application:
+  \texttt{parseTable\ =\ map\ words} and
+  \texttt{parseTable\ xs\ =\ map\ words\ xs} should be equivalent under
+  normalization, but they currently are not.
+\end{itemize}
+
+\hypertarget{conclusion}{%
+\section{Conclusion}\label{conclusion}}
+
+Based on the previous analysis, we have identified the following
+style-related refactorings:
+
+\begin{itemize}
+\tightlist
+\item
+  Removing irrelevant code
+\item
+  Removing redundant pattern matching
+\item
+  Refactoring specialized reimplementations of \texttt{map}
+\item
+  Refactoring list anti-patterns
+\end{itemize}
+
+Our analysis shows that 109 of the 111 solutions should be clustered in
+two big groups after implementing the suggested transformations and
+resolving the bugs. From the remaining two submissions, one uses a
+function from an external package and the other one is not semantically
+equivalent to the others. Therefore they should remain in their own
+singleton group even after adding the new transformations.
+
+The effects of adding the new program transformations is reflected in
+the table below:
+
+\begin{longtable}[]{@{}llllllllll@{}}
+\toprule
+Exercise number & Groups & 1 & 2 & 3-4 & 5-8 & 9-16 & 17-32 & 33-64 &
+\textgreater{}64\tabularnewline
+\midrule
+\endhead
+Before & 15 & 9 & 2 & 1 & 1 & 1 & 0 & 0 & 1\tabularnewline
+After & 4 & 2 & 0 & 0 & 0 & 1 & 0 & 0 & 1\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{timetable-and-planning}{%
+\chapter{Timetable and planning}\label{timetable-and-planning}}
+
+The project spans 20 weeks, which we divide as follows:
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+Task & Start & End & \# of weeks\tabularnewline
+\midrule
+\endhead
+Exercise 1 and bugfixing & 19/2/2018 & 9/3/2018 & 3\tabularnewline
+Exercise 2 & 12/3/2018 & 23/3/2018 & 2\tabularnewline
+Exercise 3 & 26/3/2018 & 6/4/2018 & 2\tabularnewline
+Exercise 4 & 9/4/2018 & 20/4/2018 & 2\tabularnewline
+Exercise 5 & 23/4/2018 & 4/5/2018 & 2\tabularnewline
+Exercise 6 & 7/5/2018 & 11/5/2018 & 1\tabularnewline
+Exercise 7 & 14/5/2018 & 18/6/2018 & 1\tabularnewline
+Exercise 8 & 21/6/2018 & 25/6/2018 & 1\tabularnewline
+Wrapping up and writing & 28/5/2018 & 30/6/2018 & 5\tabularnewline
+Prepare thesis defense & 2/7/2018 & 5/7/2018 & 1\tabularnewline
+Thesis defense & 6/7/2018 & - & -\tabularnewline
+\bottomrule
+\end{longtable}
+
+For each exercise, we are going to:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Perform program clustering and analyze the resulting data
+\item
+  Identify transformations that suit our acceptance criteria
+\item
+  Implement them in Ask-Elle
+\item
+  Analyze the improvements in program clustering, considering not only
+  the current exercise but all of them
+\item
+  Write a brief report highlighting relevant details so we can resort to
+  it when writing the thesis
+\end{enumerate}
+
+Note that the amount of weeks allocated to each exercise decreases as we
+advance, since we expect to build upon our previous work. Additionally,
+extra time is allocated to exercise 1, as it involves fixing some bugs,
+like that \texttt{double\ xs\ =\ map\ (*\ 2)\ xs} is not recognized as
+equivalent to \texttt{double\ =\ map\ (*\ 2)}.
+
+\hypertarget{references}{%
+\chapter*{References}\label{references}}
+\addcontentsline{toc}{chapter}{References}
+
+\hypertarget{refs}{}
+\leavevmode\hypertarget{ref-2005alasurvey}{}%
+{[}1{]} Ala-Mutka, K.M. 2005. A survey of automated assessment
+approaches for programming assignments. \emph{Computer science
+education}. 15, 2 (2005), 83--102.
+
+\leavevmode\hypertarget{ref-2013lambda}{}%
+{[}2{]} Barendregt, H. et al. 2013. \emph{Lambda calculus with types}.
+Cambridge University Press.
+
+\leavevmode\hypertarget{ref-2007brown}{}%
+{[}3{]} Brown, C. and Thompson, S. 2007. Refactorings that split and
+merge programs. \emph{Draft proceedings of the 19th international
+symposium on implementation and application of functional languages, ifl
+2007} (2007).
+
+\leavevmode\hypertarget{ref-2008brown}{}%
+{[}4{]} Brown, C.M. 2008. \emph{Tool support for refactoring haskell
+programs}. University of Kent, UK.
+
+\leavevmode\hypertarget{ref-2017askelle}{}%
+{[}5{]} Gerdes, A. et al. 2017. Ask-elle: An adaptable programming tutor
+for haskell giving automated feedback. \emph{International Journal of
+Artificial Intelligence in Education}. 27, 1 (2017), 65--100.
+
+\leavevmode\hypertarget{ref-2015overcode}{}%
+{[}6{]} Glassman, E.L. et al. 2015. OverCode: Visualizing variation in
+student solutions to programming problems at scale. \emph{ACM
+Transactions on Computer-Human Interaction (TOCHI)}. 22, 2 (2015), 7.
+
+\leavevmode\hypertarget{ref-2014letrec}{}%
+{[}7{]} Grabmayer, C. and Rochel, J. 2014. Maximal sharing in the lambda
+calculus with letrec. \emph{ACM sigplan notices} (2014), 67--80.
+
+\leavevmode\hypertarget{ref-2013huang}{}%
+{[}8{]} Huang, J. et al. 2013. Syntactic and functional variability of a
+million code submissions in a machine learning mooc. \emph{AIED 2013
+workshops proceedings volume} (2013), 25.
+
+\leavevmode\hypertarget{ref-2016feedbackreview}{}%
+{[}9{]} Keuning, H. et al. 2016. Towards a systematic review of
+automated feedback generation for programming exercises.
+\emph{Proceedings of the 2016 acm conference on innovation and
+technology in computer science education} (New York, NY, USA, 2016),
+41--46.
+
+\leavevmode\hypertarget{ref-HLint}{}%
+{[}10{]} Mitchell, N. HLint repository on github. Available at
+\url{https://github.com/ndmitchell/hlint}. Accessed 5 February 2018.
+
+\leavevmode\hypertarget{ref-2014codewebs}{}%
+{[}11{]} Nguyen, A. et al. 2014. Codewebs: Scalable homework search for
+massive open online programming courses. \emph{Proceedings of the 23rd
+international conference on world wide web} (2014), 491--502.
+
+\leavevmode\hypertarget{ref-2017ITAP}{}%
+{[}12{]} Rivers, K. and Koedinger, K.R. 2017. Data-driven hint
+generation in vast solution spaces: A self-improving python programming
+tutor. \emph{International Journal of Artificial Intelligence in
+Education}. 27, 1 (2017), 37--64.
+
+\leavevmode\hypertarget{ref-2007systemfc}{}%
+{[}13{]} Sulzmann, M. et al. 2007. System f with type equality
+coercions. \emph{Proceedings of the 2007 acm sigplan international
+workshop on types in languages design and implementation} (2007),
+53--66.
+
+\leavevmode\hypertarget{ref-2013thompson}{}%
+{[}14{]} THOMPSON, S. and LI, H. 2013. Refactoring tools for functional
+languages. \emph{Journal of Functional Programming}. 23, 3 (2013),
+293--350. DOI:\url{https://doi.org/10.1017/S0956796813000117}.
+
+\leavevmode\hypertarget{ref-2007wang}{}%
+{[}15{]} Wang, T. et al. 2007. Semantic similarity-based grading of
+student programs. \emph{Information and Software Technology}. 49, 2
+(2007), 99--107.
+
+\leavevmode\hypertarget{ref-2003transformation}{}%
+{[}16{]} Xu, S. and San Chee, Y. 2003. Transformation-based diagnosis of
+student programs for programming tutoring systems. \emph{IEEE
+Transactions on Software Engineering}. 29, 4 (2003), 360--384.
+
+\end{document}
