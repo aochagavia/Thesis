@@ -1,0 +1,74 @@
+\chapter{Introduction}
+
+Ask-Elle \cite{2017askelle} is a programming tutor designed to help students learn the Haskell programming language. With Ask-Elle, teachers can specify exercises along with model solutions and students can solve them interactively. During the process, the system is able to check whether a student is on the right track and, in case they get stuck, it can provide relevant hints. Afterwards, it can check whether the provided solution is correct.
+
+The exercises supported by Ask-Elle ask to implement functions. For instance, an exercise to teach basic concepts around lists and recursion could be to implement the \texttt{length} function.
+
+One of the strengths of Ask-Elle is its ability to provide feedback and hints based only on a model solution. The teacher writes a solution for the exercise and Ask-Elle does the rest. This is very convenient, because it minimizes the work to set up the exercises.
+
+\section{Program matching}
+
+In order to provide hints and check the correctness of student answers, Ask-Elle relies on program matching. That is, a mechanism to compare two programs and determine whether:
+
+\begin{enumerate}
+    \item They are equal;
+    \item One is an incomplete version of the other;
+    \item Nothing can be concluded.
+\end{enumerate}
+
+By using this technique, student answers can be compared to model solutions. In case a student answer turns out to be equal to the model solution, we know that the answer is correct. If it turns out to be an incomplete version of the model solution, we know that the student is on the right track and can offer them hints. If nothing can be concluded, Ask-Elle cannot offer any hints, but it will perform property-based testing so the student gets feedback regarding correctness.
+
+At the core of program matching is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as comparing the resulting normal forms for equality. In this comparison, there is an option to make holes match everything, so that incomplete programs can be matched to complete ones.
+
+As an example, consider the function \mintinline{haskell}{double :: [Int] -> [Int]}, which doubles each element in a list of integers. The model solution, student answer and normalized version are shown below.
+
+\begin{minted}{haskell}
+-- Model solution
+double = map (* 2)
+
+-- Student answer
+double = map (\x -> 2 * x)
+
+-- Normalized version (similar for both)
+double = map ((*) 2)
+\end{minted}
+
+\section{Limitations}
+
+A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming. For this purpose, there are some limitations that stand out. We will discuss them below.
+
+\subsection{No feedback regarding style}
+
+Right now, the only criterion followed by Ask-Elle when providing hints is whether the next step brings the program closer to one of the model solutions. On a fundamental level, Ask-Elle does not care about the beauty of the code, as normalization is blind to it.
+
+In this light, the current approach to encourage a good programming style consists of enforcing it through well-chosen model solutions. If the style of a model solution is good, the hints will lead to a program with good style.
+
+The aforementioned approach is limited, because it only provides hints when a student is already on the right track. However, when an incomplete program does not follow the style of the model solution, Ask-Elle is unable to come up with suggestions or hints. This happens because Ask-Elle can only reason about what needs to be *added* to a program, while style improvements often require *refactoring* a program.
+
+In cases where a given anti-pattern is widespread between the students, it is possible to work around the previous limitation by adding a model solution that makes use of said anti-pattern. This way, a student can receive hints even when their solution does not adhere to the style guidelines. Still, this is hardly a viable option as it requires predicting all the style problems that a program may present.
+
+Ask-Elle's blindness to style is an undesirable limitation, considering that teaching good style is an integral part of programming courses and that style is often an important factor in the grading. Lack of knowledge may lead beginners to write complex code, while simpler solutions exist. Style-oriented hints seem particularly useful for them, as they would help remove unnecessary complexity.
+
+\subsection{Style-unaware program matching}
+
+Ask-Elle's normalization procedure is designed to handle only small syntactical differences. Two programs can only be transformed to the same normal form if they follow the same style. As we saw above, this causes problems when attempting to provide hints for a program that diverges too much from its model solution. Let us consider again the \texttt{double} function, this time implemented in a recursive way:
+
+\begin{minted}{haskell}
+-- Original program
+double [] = []
+double (x:xs) = (x * 2) : double xs
+
+-- Normalized
+double = \y1 -> case y1 of
+    [] -> []
+    (x1 : x2) -> (:) ((*) x1 2) (double x2)
+\end{minted}
+
+It takes little time to see that this is basically a specialized reimplementation of map. Therefore it would be interesting to see it normalized as such:
+
+\begin{minted}{haskell}
+-- Desired normalization
+double = map ((*) 2)
+\end{minted}
+
+Considering that reimplementing map is a common anti-pattern among beginners, it is unfortunate that they cannot get any hints in the presence of this style issue. In this regard, the lack of style-aware transformations has a clear impact on the user experience.

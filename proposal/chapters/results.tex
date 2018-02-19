@@ -1,100 +1,104 @@
-# Preliminary results {#results}
+\chapter{Results}
 
-## Adapting Ask-Elle
+\section{Adapting Ask-Elle}
 
 In order to establish a baseline we had to run Ask-Elle on each of the student submissions. In this process we had to overcome a series of obstacles derived from the current implementation of Ask-Elle. Below we describe them in detail.
 
-### Batch processing
+\subsection{Batch processing}
 
 Ask-Elle is designed as an interactive tutoring system that is used through a web interface. However, our use case was feeding 888 student submissions, each one with its own file. The web interface was clearly unsuitable for the task, so we had to look for an alternative.
 
 Leveraging Ask-Elle's modular design, we reused the existing code and developed a tool to:
 
-* Normalize all submissions of an exercise
-* Identify groups of submissions that have the same normal form
-* Output relevant statistics
+\begin{itemize}
+    \item Normalize all submissions of an exercise
+    \item Identify groups of submissions that have the same normal form
+    \item Output relevant statistics
+\end{itemize}
 
-### Support for list comprehensions
+\subsection{Support for list comprehensions}
 
 At the beginning of this project, Ask-Elle lacked support for list comprehensions. Instead, it would crash whenever a program contained a list comprehension. This was a problem because many of the student submissions used this feature. With little knowledge about the codebase, adding proper support for list comprehensions would have taken too much time. Therefore we chose to support them partially, by enabling normalization of list comprehensions. While Ask-Elle still does not support list comprehensions through the interactive tutor, our command-line tool does, which is enough for this project.
 
-### Support for functions defined outside the prelude
+\subsection{Support for functions defined outside the prelude}
 
 When attempting to feed the student programs to Ask-Elle, we discovered that it lacked support for functions that are not in the prelude. We fixed the problem by creating special compiler options, including the possibility to specify a list of functions that are brought into scope. This was the most difficult feature to add, as we had to figure out how to modify some undocumented modules of Ask-Elle. While our implementation is properly modularized, it is only being used by our command-line tool right now. However, it should be easy to enable in the web version if desired.
 
-## Establishing a baseline
+\section{Establishing a baseline}
 
 After fixing the problems mentioned above we were able to feed the 888 solutions to Ask-Elle. For each exercise, we clustered the solutions according to their normalized form, identified the amount of groups and classified them according to their size.
 
 The table below shows, for each exercise, the total amount of groups that were found. It also shows the size of each of them, starting with singleton groups up to groups consisting of more than 64 programs. Note that larger groups are better, since they handle more submissions.
 
-Exercise number  Groups 1   2  3-4 5-8 9-16 17-32 33-64 >64
----------------  ------ --- -- --- --- ---- ----- ----- ---
-1                15     9   2  1   1   1    0     0     1
-2                64     47  8  6   2   0    1     0     0
-3                51     39  8  1   0   2    1     0     0
-4                41     30  3  4   3   0    0     1     0
-5                43     28  2  9   1   2    1     0     0
-6                107    103 4  0   0   0    0     0     0
-7                96     85  8  3   0   0    0     0     0
-8                87     76  6  3   2   0    0     0     0
------------------------------------------------------------
+\begin{tabular}{l l l l l l l l l l}
+    Exercise number & Groups & 1     & 2   & 3-4 & 5-8 & 9-16 & 17-32 & 33-64 & >64 \\
+    1               & 15     &  9    &  2  &  1  &  1  &  1  &  0  &  0  &  1       \\
+    2               & 64     &  47   &  8  &  6  &  2  &  0  &  1  &  0  &  0       \\
+    3               & 51     &  39   &  8  &  1  &  0  &  2  &  1  &  0  &  0       \\
+    4               & 41     &  30   &  3  &  4  &  3  &  0  &  0  &  1  &  0       \\
+    5               & 43     &  28   &  2  &  9  &  1  &  2  &  1  &  0  &  0       \\
+    6               & 107    &  103  &  4  &  0  &  0  &  0  &  0  &  0  &  0       \\
+    7               & 96     &  85   &  8  &  3  &  0  &  0  &  0  &  0  &  0       \\
+    8               & 87     &  76   &  6  &  3  &  2  &  0  &  0  &  0  &  0
+\end{tabular}
 
-## Identifying useful program transformations
+\section{Identifying useful program transformations}
 
-Given the sheer amount of information obtained after running our command-line tool, we decided to focus only on the first exercise for this research proposal. This exercise consists of implementing the function `parseTable`, which could be implemented as shown below:
+Given the sheer amount of information obtained after running our command-line tool, we decided to focus only on the first exercise for this research proposal. This exercise consists of implementing the function \texttt{parseTable}, which could be implemented as shown below:
 
-```haskell
+\begin{minted}{haskell}
 parseTable :: [String] -> [[String]]
 parseTable = map words
-```
+\end{minted}
 
 The three biggest groups contain submissions that are variants of the following functions:
 
-1. `parseTable = map words` (73 elements)
-1. `parseTable xs = map words xs` (13 elements)
-1. `parseTable xs = [words x | x <- xs]` (8 elements)
+\begin{enumerate}
+\item \mintinline{haskell}{parseTable = map words} (73 elements)
+\item \mintinline{haskell}{parseTable xs = map words xs} (13 elements)
+\item \mintinline{haskell}{parseTable xs = [words x | x <- xs]} (8 elements)
+\end{enumerate}
 
 Besides these groups, there are 13 other groups containing a total of 17 submissions. We identified a series of program transformations that would help reduce the amount of groups down to four. They are discussed below.
 
-### Irrelevant code elimination
+\subsection{Irrelevant code elimination}
 
 Two of the programs ended up in their own singleton group because of having an unnecessary branch that calls the error function. Instead of the model solution discussed above, they implemented the function as shown below:
 
-```haskell
+\begin{minted}{haskell}
 parseTable [] = error "Empty list"
 parseTable xs = map words xs
-```
+\end{minted}
 
-Removing the branch that ends up calling `error` would have enabled this function to be recognized as part of one of the bigger groups. In principle, such a transformation is not semantics-preserving. However, the definition of the exercise stated that the parameter would never be the empty list. This is a case of *irrelevant code elimination*, as described by Brown and Thompson [@2007brown].
+Removing the branch that ends up calling \texttt{error} would have enabled this function to be recognized as part of one of the bigger groups. In principle, such a transformation is not semantics-preserving. However, the definition of the exercise stated that the parameter would never be the empty list. This is a case of *irrelevant code elimination*, as described by Brown and Thompson \cite{2007brown}.
 
-### Removing redundant pattern matching
+\subsection{Removing redundant pattern matching}
 
 Another four submissions were separated from the big groups because they performed unnecessary pattern matching. They are variations of the code below:
 
-```haskell
+\begin{minted}{haskell}
 parseTable [] = []
 parseTable xs = map words xs
-```
+\end{minted}
 
-Since `map` is being used, matching on `[]` becomes unnecessary. Removing the match on the empty list would enable these submissions to be categorized as pertaining to one of the bigger groups.
+Since \texttt{map} is being used, matching on \texttt{[]} becomes unnecessary. Removing the match on the empty list would enable these submissions to be categorized as pertaining to one of the bigger groups.
 
 While HLint is able to recognize complex opportunities for refactoring, it fails to do so here. Still, we believe this is a general purpose refactoring that should be supported by Ask-Elle.
 
-### Refactoring reimplementations of map
+\subsection{Refactoring reimplementations of map}
 
 Two of the submissions consist of a specialized reimplementation of map, following the pattern below:
 
-```haskell
+\begin{minted}{haskell}
 parseTable [] = []
 parseTable (x:xs) = words x : parseTable xs
-```
+\end{minted}
 
-In this case, the ideal solution would be to transform the program to use `map` and suggesting such a refactoring to the user. Besides resulting in better style, it would allow these implementations to be recognized as part of one of the bigger groups.
+In this case, the ideal solution would be to transform the program to use \texttt{map} and suggesting such a refactoring to the user. Besides resulting in better style, it would allow these implementations to be recognized as part of one of the bigger groups.
 
 This refactoring is very common, as can be deduced from the fact that it is recognized by HLint:
 
-```
+\begin{lstlisting}
 > hlint test.hs
 
 test.hs:1:1: Warning: Use map
@@ -103,13 +107,13 @@ Found:
   parseTable (x : xs) = words x : parseTable xs
 Why not:
   parseTable xs = map words xs
-```
+\end{lstlisting}
 
-### Refactoring list anti-patterns
+\subsection{Refactoring list anti-patterns}
 
 Besides the submissions mentioned above, there are three other submissions that reimplement map, but present additional problems. Namely, that they make use of list anti-patterns.
 
-```haskell
+\begin{minted}{haskell}
 -- Concat with a singleton list on the left
 parseTable [] = []
 parseTable (x:xs) = [words x] ++ parseTable xs
@@ -121,39 +125,45 @@ parseTable (x:xs) = (words x : []) ++ parseTable xs
 -- Using head and tail instead of pattern matching on xs
 parseTable [] = []
 parseTable xs = words (head xs) : parseTable (tail xs)
-```
+\end{minted}
 
 The solution here would be to recognize and refactor those anti-patterns. Regarding the previous code examples, the following refactorings would be suitable:
 
-* Replace `[x] ++ xs` by `x : xs`
-* Replace `x : []` by `[x]`
-* Introduce pattern matching whenever the combination of `head` and `tail` is used, so `head xs` can become `x` and `tail xs` is replaced by `xs`.
+\begin{itemize}
+    \item Replace \texttt{[x] ++ xs} by \texttt{x : xs}
+    \item Replace \texttt{x : []} by \texttt{[x]}
+    \item Introduce pattern matching whenever the combination of \texttt{head} and \texttt{tail} is used, so \texttt{head xs} can become \texttt{x} and \texttt{tail xs} is replaced by \texttt{xs}.
+\end{itemize}
 
-The first two refactorings are recognized by HLint, while the third is not. Still, we see replacing `head` and `tail` by pattern matching as a general purpose refactoring.
+The first two refactorings are recognized by HLint, while the third is not. Still, we see replacing \texttt{head} and \texttt{tail} by pattern matching as a general purpose refactoring.
 
-## Bugs
+\section{Bugs}
 
 Besides new program transformations, there are some normalization steps that we expected to work but did not:
 
-* No dead code removal: one of the submissions contained functions intended for debugging during a REPL session. They should have been automatically removed, as they were not used by `parseTable`.
-* No `where` inlining: some students used an auxiliary function declared in a `where` clause which should have been inlined.
-* Mismatch between complete and partial application: `parseTable = map words` and `parseTable xs = map words xs` should be equivalent under normalization, but they currently are not.
+\begin{itemize}
+    \item No dead code removal: one of the submissions contained functions intended for debugging during a REPL session. They should have been automatically removed, as they were not used by \texttt{parseTable}.
+    \item No \texttt{where} inlining: some students used an auxiliary function declared in a \texttt{where} clause which should have been inlined.
+    \item Mismatch between complete and partial application: \texttt{parseTable = map words} and \texttt{parseTable xs = map words xs} should be equivalent under normalization, but they currently are not.
+\end{itemize}
 
-## Conclusion
+\section{Conclusion}
 
 Based on the previous analysis, we have identified the following style-related refactorings:
 
-* Removing irrelevant code
-* Removing redundant pattern matching
-* Refactoring specialized reimplementations of `map`
-* Refactoring list anti-patterns
+\begin{itemize}
+    \item Removing irrelevant code
+    \item Removing redundant pattern matching
+    \item Refactoring specialized reimplementations of \texttt{map}
+    \item Refactoring list anti-patterns
+\end{itemize}
 
 Our analysis shows that 109 of the 111 solutions should be clustered in two big groups after implementing the suggested transformations and resolving the bugs. From the remaining two submissions, one uses a function from an external package and the other one is not semantically equivalent to the others. Therefore they should remain in their own singleton group even after adding the new transformations.
 
 The effects of adding the new program transformations is reflected in the table below:
 
-Exercise number  Groups 1   2  3-4 5-8 9-16 17-32 33-64 >64
----------------  ------ --- -- --- --- ---- ----- ----- ---
-Before           15     9   2  1   1   1    0     0     1
-After            4      2   0  0   0   1    0     0     1
------------------------------------------------------------
+\begin{tabular}{l l l l l l l l l l}
+             & Groups & 1     & 2   & 3-4 & 5-8 & 9-16 & 17-32 & 33-64 & >64 \\
+    Before   & 15     & 9     & 2   & 1   & 1   &  1   & 0     & 0     & 1   \\
+    After    & 4      & 2     & 0   & 0   & 0   &  1   & 0     & 0     & 1
+\end{tabular}

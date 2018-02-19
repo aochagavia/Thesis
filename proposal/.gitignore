@@ -1,0 +1,9 @@
+*.aux
+*.bbl
+*.blg
+*.toc
+*.gz
+*.log
+*.pdf
+*.out
+_minted-thesis/
