@@ -1,34 +1,27 @@
 \chapter{Results}
+\label{sec:common-antipatterns}
 
-\section{Adapting Ask-Elle}
+To answer these questions, we rely on a dataset of 111 correct submissions to the first assignment of the functional programming course at Universiteit Utrecht. The assignment requires implementing 8 functions, which translate to 8 Ask-Elle exercises. This means that we get 888 programs we can analyze.
 
-In order to establish a baseline we had to run Ask-Elle on each of the student submissions. In this process we had to overcome a series of obstacles derived from the current implementation of Ask-Elle. Below we describe them in detail.
+Measuring the quality of Ask-Elle's normalization is done on a per-exercise basis. For each exercise, we take the 111 submissions, normalize them and cluster them in groups that have the same normal form. Since all submissions are correct programs, an ideal normalization strategy should result in a few big clusters, which means that all similar programs have been transformed to the same normal form. This is equivalent to saying that Ask-Elle should be able to match many programs with a small number of model solutions. Because of this, we measure the amount of clusters per exercise and the size of each cluster.
 
-\subsection{Batch processing}
+\section{A batch tool}
 
-Ask-Elle is designed as an interactive tutoring system that is used through a web interface. However, our use case was feeding 888 student submissions, each one with its own file. The web interface was clearly unsuitable for the task, so we had to look for an alternative.
-
-Leveraging Ask-Elle's modular design, we reused the existing code and developed a tool to:
+We develop a batch tool to:
 
 \begin{itemize}
-    \item Normalize all submissions of an exercise
-    \item Identify groups of submissions that have the same normal form
-    \item Output relevant statistics
+    \item Normalize all submissions of an exercise;
+    \item Identify groups of submissions that have the same normal form;
+    \item Output relevant statistics.
 \end{itemize}
 
-\subsection{Support for list comprehensions}
-
-At the beginning of this project, Ask-Elle lacked support for list comprehensions. Instead, it would crash whenever a program contained a list comprehension. This was a problem because many of the student submissions used this feature. With little knowledge about the codebase, adding proper support for list comprehensions would have taken too much time. Therefore we chose to support them partially, by enabling normalization of list comprehensions. While Ask-Elle still does not support list comprehensions through the interactive tutor, our command-line tool does, which is enough for this project.
-
-\subsection{Support for functions defined outside the prelude}
-
-When attempting to feed the student programs to Ask-Elle, we discovered that it lacked support for functions that are not in the prelude. We fixed the problem by creating special compiler options, including the possibility to specify a list of functions that are brought into scope. This was the most difficult feature to add, as we had to figure out how to modify some undocumented modules of Ask-Elle. While our implementation is properly modularized, it is only being used by our command-line tool right now. However, it should be easy to enable in the web version if desired.
+Since some students use list comprehensions, which are not supported in Ask-Elle, we add support for them in our batch tool. Besides this, we add support for using functions that are defined outside of the prelude, as some exercises require that feature.
 
 \section{Establishing a baseline}
 
-After fixing the problems mentioned above we were able to feed the 888 solutions to Ask-Elle. For each exercise, we clustered the solutions according to their normalized form, identified the amount of groups and classified them according to their size.
+Using the tool we developed, we feed the 888 solutions to Ask-Elle. For each exercise, we cluster the solutions according to their normal form, identify the amount of groups and classify them according to their size.
 
-The table below shows, for each exercise, the total amount of groups that were found. It also shows the size of each of them, starting with singleton groups up to groups consisting of more than 64 programs. Note that larger groups are better, since they handle more submissions.
+The table below shows, for each exercise, the total amount of groups. It also shows their size, starting with singleton groups up to groups consisting of more than 64 programs. Note that larger groups are better, since they handle more submissions.
 
 \begin{tabular}{l l l l l l l l l l}
     Exercise number & Groups & 1     & 2   & 3-4 & 5-8 & 9-16 & 17-32 & 33-64 & >64 \\
@@ -44,7 +37,7 @@ The table below shows, for each exercise, the total amount of groups that were f
 
 \section{Identifying useful program transformations}
 
-Given the sheer amount of information obtained after running our command-line tool, we decided to focus only on the first exercise for this research proposal. This exercise consists of implementing the function \texttt{parseTable}, which could be implemented as shown below:
+In this proposal we focus on the first exercise, which consists of implementing the function \texttt{parseTable}. Below is a possible model solution:
 
 \begin{minted}{haskell}
 parseTable :: [String] -> [[String]]
@@ -71,6 +64,8 @@ parseTable xs = map words xs
 \end{minted}
 
 Removing the branch that ends up calling \texttt{error} would have enabled this function to be recognized as part of one of the bigger groups. In principle, such a transformation is not semantics-preserving. However, the definition of the exercise stated that the parameter would never be the empty list. This is a case of *irrelevant code elimination*, as described by Brown and Thompson \cite{2007brown}.
+
+FIXME: how do we know that cutting a branch is OK? We should mention static analysis here, since that is necessary to detect that a branch is unreachable according to the definition of the problem at hand. Maybe cite this \cite{2002vaucheret}
 
 \subsection{Removing redundant pattern matching}
 
@@ -137,7 +132,7 @@ The solution here would be to recognize and refactor those anti-patterns. Regard
 
 The first two refactorings are recognized by HLint, while the third is not. Still, we see replacing \texttt{head} and \texttt{tail} by pattern matching as a general purpose refactoring.
 
-\section{Bugs}
+\section{Other opportunities for improvement}
 
 Besides new program transformations, there are some normalization steps that we expected to work but did not:
 
@@ -146,6 +141,10 @@ Besides new program transformations, there are some normalization steps that we 
     \item No \texttt{where} inlining: some students used an auxiliary function declared in a \texttt{where} clause which should have been inlined.
     \item Mismatch between complete and partial application: \texttt{parseTable = map words} and \texttt{parseTable xs = map words xs} should be equivalent under normalization, but they currently are not.
 \end{itemize}
+
+FIXME: report that we actually implemented n. 3, but it didn't work out as expected because of the interaction with the strategy.
+
+There are actually reasons for this to be the way it currently is!
 
 \section{Conclusion}
 
@@ -158,7 +157,7 @@ Based on the previous analysis, we have identified the following style-related r
     \item Refactoring list anti-patterns
 \end{itemize}
 
-Our analysis shows that 109 of the 111 solutions should be clustered in two big groups after implementing the suggested transformations and resolving the bugs. From the remaining two submissions, one uses a function from an external package and the other one is not semantically equivalent to the others. Therefore they should remain in their own singleton group even after adding the new transformations.
+Our analysis shows that 109 of the 111 solutions should be clustered in two big groups after implementing the suggested transformations. These correspond to \mintinline{haskell}{parseTable = map words} and \mintinline{haskell}{parseTable xs = [words x | x <- xs]}. From the remaining two submissions, one uses a function from an external package and the other one is not semantically equivalent to the others (FIXME: explain that it passes the tests but is different, because there is a base case from [] to [[]]). Therefore they should remain in their own singleton group even after adding the new transformations.
 
 The effects of adding the new program transformations is reflected in the table below:
 

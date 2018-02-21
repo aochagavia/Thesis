@@ -6,69 +6,78 @@ The exercises supported by Ask-Elle ask to implement functions. For instance, an
 
 One of the strengths of Ask-Elle is its ability to provide feedback and hints based only on a model solution. The teacher writes a solution for the exercise and Ask-Elle does the rest. This is very convenient, because it minimizes the work to set up the exercises.
 
-\section{Program matching}
+\section{Ask-Elle in action}
+\label{sec:intro-askelle-example-session}
 
-In order to provide hints and check the correctness of student answers, Ask-Elle relies on program matching. That is, a mechanism to compare two programs and determine whether:
+To understand how Ask-Elle works, we present a hypothetical situation where a student follows Ask-Elle's hints until reaching the solution to the assignment. In our example, the student has to implement the function \mintinline{haskell}{double :: [Int] -> [Int]}, which multiplies each number in the list by two. We assume the exercise to have a single model solution, defined as \mintinline{haskell}{double = map (* 2)}.
+
+Figure \ref{fig:interactive-session-double} shows the student's path to a solution. It starts with an empty program, which is refined step by step. Note that the hints have been generated from the model solution, as mentioned at the beginning of this chapter.
+
+\begin{figure}
+\begin{minted}{haskell}
+-- Starting point
+?
+
+-- Apply hint: Introduce the function double
+double = ?
+
+-- Apply hint: Use the higher-order map function
+double = map ?
+
+-- Apply hint: Use the times operator (*)
+double = map (* ?)
+
+-- Apply hint: Introduce the integer 2
+double = map (* 2)
+\end{minted}
+\caption{Interactive Ask-Elle session}
+\label{fig:interactive-session-double}
+\end{figure}
+
+\section{A fundamental limitation}
+\label{sec:intro-fundamental-limitation}
+
+A fundamental limitation of Ask-Elle is its inability to produce hints for programs that deviate too much from the model solution. In such cases, Ask-Elle returns an error message: \emph{You have drifted from the strategy in such a way that we can not help you any more}. With such a message, the only way forward is to start over from the very beginning (an empty program, represented as \texttt{?}) or to restore a previous version of the program known to be accepted by Ask-Elle.
+
+While the session from Figure \ref{fig:interactive-session-double} starts with the empty program, a student has the freedom to choose a different starting point. Consider, for instance, the hypothetical case of a student that wants to implement a recursive version of \texttt{double}, according to the specification from Section \ref{sec:intro-askelle-example-session}. Figure \ref{fig:limitations-recursive-double} shows said recursive implementation, which is semantically equivalent to the model solution, but has clear syntactical differences. Let us imagine that the student does not start with an empty program, but with a partial implementation of the function. How would an Ask-Elle session look like in this case? Figure \ref{fig:limitations-askelle-example-session} shows an expected yet unfortunate outcome: there are no hints available.
+
+The main way to deal with this limitation is by defining multiple model solutions. For instance, adding a recursive model solution would fix the problem in this concrete example. Still, this is not a scalable approach, since it requires a teacher to foresee the path the students will follow and may result in an explosion of model solutions.
+
+\begin{figure}
+\begin{minted}{haskell}
+double [] = []
+double (x:xs) = x * 2 : double xs
+\end{minted}
+\caption{Recursive implementation of \texttt{double}}
+\label{fig:limitations-recursive-double}
+\end{figure}
+
+\begin{figure}
+\begin{minted}{haskell}
+-- Starting point
+double [] = ?
+double (x:xs) = ?
+
+-- Ask-Elle's reply: You have drifted from the strategy in
+-- such a way that we can not help you any more
+\end{minted}
+\caption{Unsuccessful Ask-Elle session}
+\label{fig:limitations-askelle-example-session}
+\end{figure}
+
+\section{Practical consequences}
+
+A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming, where students have little knowledge about Haskell programming style. This leads them to use style anti-patterns, which causes in syntactical differences that Ask-Elle is unable to handle. In fact, our results show that style anti-patterns are an important cause of Ask-Elle being unable to provide hints or validate a submission (see Chapter \ref{sec:common-antipatterns} for details).
+
+In cases where a given anti-pattern is widespread between the students, it is possible to apply the workaround mentioned in Section \ref{sec:intro-fundamental-limitation} by adding a model solution that makes use of said anti-pattern. Still, this is hardly a viable option as the amount of model solutions required grows exponentially.
+
+\section{Research questions}
+
+In the previous sections we have described a key limitation of Ask-Elle and how it affects its target audience. This gives rise to the following questions:
 
 \begin{enumerate}
-    \item They are equal;
-    \item One is an incomplete version of the other;
-    \item Nothing can be concluded.
+    \item Which are the main style anti-patterns that are causing problems to Ask-Elle?
+    \item How can we improve Ask-Elle's capability to give hints in the presence of style anti-patterns?
 \end{enumerate}
 
-By using this technique, student answers can be compared to model solutions. In case a student answer turns out to be equal to the model solution, we know that the answer is correct. If it turns out to be an incomplete version of the model solution, we know that the student is on the right track and can offer them hints. If nothing can be concluded, Ask-Elle cannot offer any hints, but it will perform property-based testing so the student gets feedback regarding correctness.
-
-At the core of program matching is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as comparing the resulting normal forms for equality. In this comparison, there is an option to make holes match everything, so that incomplete programs can be matched to complete ones.
-
-As an example, consider the function \mintinline{haskell}{double :: [Int] -> [Int]}, which doubles each element in a list of integers. The model solution, student answer and normalized version are shown below.
-
-\begin{minted}{haskell}
--- Model solution
-double = map (* 2)
-
--- Student answer
-double = map (\x -> 2 * x)
-
--- Normalized version (similar for both)
-double = map ((*) 2)
-\end{minted}
-
-\section{Limitations}
-
-A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming. For this purpose, there are some limitations that stand out. We will discuss them below.
-
-\subsection{No feedback regarding style}
-
-Right now, the only criterion followed by Ask-Elle when providing hints is whether the next step brings the program closer to one of the model solutions. On a fundamental level, Ask-Elle does not care about the beauty of the code, as normalization is blind to it.
-
-In this light, the current approach to encourage a good programming style consists of enforcing it through well-chosen model solutions. If the style of a model solution is good, the hints will lead to a program with good style.
-
-The aforementioned approach is limited, because it only provides hints when a student is already on the right track. However, when an incomplete program does not follow the style of the model solution, Ask-Elle is unable to come up with suggestions or hints. This happens because Ask-Elle can only reason about what needs to be *added* to a program, while style improvements often require *refactoring* a program.
-
-In cases where a given anti-pattern is widespread between the students, it is possible to work around the previous limitation by adding a model solution that makes use of said anti-pattern. This way, a student can receive hints even when their solution does not adhere to the style guidelines. Still, this is hardly a viable option as it requires predicting all the style problems that a program may present.
-
-Ask-Elle's blindness to style is an undesirable limitation, considering that teaching good style is an integral part of programming courses and that style is often an important factor in the grading. Lack of knowledge may lead beginners to write complex code, while simpler solutions exist. Style-oriented hints seem particularly useful for them, as they would help remove unnecessary complexity.
-
-\subsection{Style-unaware program matching}
-
-Ask-Elle's normalization procedure is designed to handle only small syntactical differences. Two programs can only be transformed to the same normal form if they follow the same style. As we saw above, this causes problems when attempting to provide hints for a program that diverges too much from its model solution. Let us consider again the \texttt{double} function, this time implemented in a recursive way:
-
-\begin{minted}{haskell}
--- Original program
-double [] = []
-double (x:xs) = (x * 2) : double xs
-
--- Normalized
-double = \y1 -> case y1 of
-    [] -> []
-    (x1 : x2) -> (:) ((*) x1 2) (double x2)
-\end{minted}
-
-It takes little time to see that this is basically a specialized reimplementation of map. Therefore it would be interesting to see it normalized as such:
-
-\begin{minted}{haskell}
--- Desired normalization
-double = map ((*) 2)
-\end{minted}
-
-Considering that reimplementing map is a common anti-pattern among beginners, it is unfortunate that they cannot get any hints in the presence of this style issue. In this regard, the lack of style-aware transformations has a clear impact on the user experience.
+This proposal is structured as follows. Chapter 2 presents the necessary background knowledge about Ask-Elle's architecture. Afterwards, Chapter 3 refers to related work relevant to our research. Then, Chapter 4 unveils the first results of our efforts finding anti-patterns. Chapter 5 suggests directions on improving Ask-Elle's capability to give hints. Finally, Chapter 6 shows a timetable with a proposed roadmap.
