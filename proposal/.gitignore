@@ -6,4 +6,6 @@
 *.log
 *.pdf
 *.out
+*.fdb_latexmk
+*.fls
 _minted-thesis/

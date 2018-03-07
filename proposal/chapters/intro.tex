@@ -1,4 +1,5 @@
 \chapter{Introduction}
+\label{sec:intro}
 
 Ask-Elle \cite{2017askelle} is a programming tutor designed to help students learn the Haskell programming language. With Ask-Elle, teachers can specify exercises along with model solutions and students can solve them interactively. During the process, the system is able to check whether a student is on the right track and, in case they get stuck, it can provide relevant hints. Afterwards, it can check whether the provided solution is correct.
 
@@ -9,9 +10,9 @@ One of the strengths of Ask-Elle is its ability to provide feedback and hints ba
 \section{Ask-Elle in action}
 \label{sec:intro-askelle-example-session}
 
-To understand how Ask-Elle works, we present a hypothetical situation where a student follows Ask-Elle's hints until reaching the solution to the assignment. In our example, the student has to implement the function \mintinline{haskell}{double :: [Int] -> [Int]}, which multiplies each number in the list by two. We assume the exercise to have a single model solution, defined as \mintinline{haskell}{double = map (* 2)}.
+To understand how Ask-Elle works, consider a hypothetical situation where a student follows Ask-Elle's hints until reaching the solution to the assignment. In our example, the task is to implement the function \mintinline{haskell}{double :: [Int] -> [Int]}, which multiplies each number in the list by two. We assume the exercise to have a single model solution, defined as \mintinline{haskell}{double = map (* 2)}.
 
-Figure \ref{fig:interactive-session-double} shows the student's path to a solution. It starts with an empty program, which is refined step by step. Note that the hints have been generated from the model solution, as mentioned at the beginning of this chapter.
+Figure \ref{fig:interactive-session-double} shows a student's path to a solution. It starts with an empty program, which is refined step by step. Note that the hints have been generated from the model solution, as mentioned at the beginning of this chapter.
 
 \begin{figure}
 \begin{minted}{haskell}
@@ -39,9 +40,9 @@ double = map (* 2)
 
 A fundamental limitation of Ask-Elle is its inability to produce hints for programs that deviate too much from the model solution. In such cases, Ask-Elle returns an error message: \emph{You have drifted from the strategy in such a way that we can not help you any more}. With such a message, the only way forward is to start over from the very beginning (an empty program, represented as \texttt{?}) or to restore a previous version of the program known to be accepted by Ask-Elle.
 
-While the session from Figure \ref{fig:interactive-session-double} starts with the empty program, a student has the freedom to choose a different starting point. Consider, for instance, the hypothetical case of a student that wants to implement a recursive version of \texttt{double}, according to the specification from Section \ref{sec:intro-askelle-example-session}. Figure \ref{fig:limitations-recursive-double} shows said recursive implementation, which is semantically equivalent to the model solution, but has clear syntactical differences. Let us imagine that the student does not start with an empty program, but with a partial implementation of the function. How would an Ask-Elle session look like in this case? Figure \ref{fig:limitations-askelle-example-session} shows an expected yet unfortunate outcome: there are no hints available.
+While the session from Figure \ref{fig:interactive-session-double} starts with the empty program, a student has the freedom to choose a different starting point. Consider, for instance, the case of a student that wants to implement a recursive version of \texttt{double}. Figure \ref{fig:limitations-recursive-double} shows said recursive implementation, which is semantically equivalent to the model solution, but has clear syntactical differences. Let us imagine that the student does not start with an empty program, but with a partial implementation of the function. How would an Ask-Elle session look like in this case? Figure \ref{fig:limitations-askelle-example-session} shows an expected yet unfortunate outcome: there are no hints available.
 
-The main way to deal with this limitation is by defining multiple model solutions. For instance, adding a recursive model solution would fix the problem in this concrete example. Still, this is not a scalable approach, since it requires a teacher to foresee the path the students will follow and may result in an explosion of model solutions.
+The main way to deal with this limitation is by defining multiple model solutions. For instance, adding a recursive model solution would fix the problem in this concrete example. Still, this is not a scalable approach, since it requires a teacher to foresee the path a student will follow. Furthermore, there are just too many ways to drift from the model solution in terms of syntax.
 
 \begin{figure}
 \begin{minted}{haskell}
@@ -67,7 +68,7 @@ double (x:xs) = ?
 
 \section{Practical consequences}
 
-A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming, where students have little knowledge about Haskell programming style. This leads them to use style anti-patterns, which causes in syntactical differences that Ask-Elle is unable to handle. In fact, our results show that style anti-patterns are an important cause of Ask-Elle being unable to provide hints or validate a submission (see Chapter \ref{sec:common-antipatterns} for details).
+A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming, where students have little knowledge about Haskell programming style. This leads them to use style anti-patterns, which causes syntactical differences that Ask-Elle is unable to handle. In fact, our results show that style anti-patterns are an important cause of Ask-Elle failing to provide hints or to assess the correctness of a finished program (see Chapter \ref{sec:first-take}).
 
 In cases where a given anti-pattern is widespread between the students, it is possible to apply the workaround mentioned in Section \ref{sec:intro-fundamental-limitation} by adding a model solution that makes use of said anti-pattern. Still, this is hardly a viable option as the amount of model solutions required grows exponentially.
 
@@ -80,4 +81,5 @@ In the previous sections we have described a key limitation of Ask-Elle and how 
     \item How can we improve Ask-Elle's capability to give hints in the presence of style anti-patterns?
 \end{enumerate}
 
-This proposal is structured as follows. Chapter 2 presents the necessary background knowledge about Ask-Elle's architecture. Afterwards, Chapter 3 refers to related work relevant to our research. Then, Chapter 4 unveils the first results of our efforts finding anti-patterns. Chapter 5 suggests directions on improving Ask-Elle's capability to give hints. Finally, Chapter 6 shows a timetable with a proposed roadmap.
+This proposal is structured as follows. Chapter \ref{sec:background} presents the necessary background knowledge about Ask-Elle's architecture. Afterwards, Chapter \ref{sec:related-work} refers to related work relevant to our research. Then, Chapter \ref{sec:first-take} shows the first results of our efforts tackling style anti-patterns. Finally, Chapter \ref{sec:timetable} shows a timetable with a proposed roadmap.
+

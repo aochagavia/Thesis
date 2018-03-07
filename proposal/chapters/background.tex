@@ -1,27 +1,49 @@
 \chapter{Background knowledge}
+\label{sec:background}
 
-% What is wrong with the current approach Ask-Elle is taking?
+Before attempting to answer our research questions, it is necessary to explain the relevant parts of Ask-Elle's architecture. This chapter presents the concepts of \emph{programming strategy} and \emph{program unification}.
 
-Ask-Elle is a complex beast
+\section{Programming strategies}
 
-...
+As mentioned in Chapter \ref{sec:intro}, an exercise in Ask-Elle is a request to implement a function that matches one of the model solutions. Under the hood, Ask-Elle  generates a \emph{programming strategy} that specifies how an exercise can be solved, as a series of steps that go from an empty program to one of the model solutions.
+
+Alternatively, we can think of a strategy as a finite-state machine. The initial state is the empty program, the transitions are the refinement steps and the accepting states are the model solutions.
+
+Consider, for example, the model solution to the problem presented in Section \ref{sec:intro-askelle-example-session} (defined as \mintinline{haskell}{double = map (* 2)}). Figure \ref{fig:bg-fsm-prog-strategies} shows the generated strategy.
+
+\begin{figure}
+\centering
+\includegraphics[height=20cm]{graphs/bg-fsm-prog-strategies}
+\caption{Example of an Ask-Elle strategy}
+\label{fig:bg-fsm-prog-strategies}
+\end{figure}
+
+According to the finite-state machine perspective on strategies, the algorithm used by Ask-Elle to provide hints works in two steps:
+
+\begin{enumerate}
+    \item Translate the student's program to a state in the machine;
+    \item Retrieve a list of all transitions available from that state and present them in a user-friendly fashion.
+\end{enumerate}
+
+From these two steps, the second is a common operation on finite-state machines. The first one, however, is much more involved, as it requires comparing programs for equivalence. This is the subject of program unification, which is described below.
 
 \section{Program unification}
 
-In order to provide hints and check the correctness of student answers, Ask-Elle relies on program unification. That is, a mechanism to compare two programs and determine whether:
+The process of comparing two programs for semantic equivalence is called program unification. This is what Ask-Elle does when comparing a student program to a model solution.
+
+Since the problem of program unification is undecidable in the case of a complex language such as Haskell (see Section \ref{sec:related-work-unification}), Ask-Elle's unification procedure has the following possible outcomes:
 
 \begin{enumerate}
-    \item They are equal;
-    \item One is an incomplete version of the other;
-    \item Nothing can be concluded. % Note: true program unification would say that the programs are different, but we cannot say that since the problem is undecidable
+    \item The programs are semantically equivalent;
+    \item One program is an incomplete version of the other;
+    \item Nothing can be concluded.
 \end{enumerate}
 
-By using this technique, student answers can be compared to model solutions. In case a student answer turns out to be equal to the model solution, we know that the answer is correct. If it turns out to be an incomplete version of the model solution, we know that the student is on the right track and can offer them hints. If nothing can be concluded, Ask-Elle cannot offer any hints, but it will perform property-based testing so the student gets feedback regarding correctness.
+At the core of Ask-Elle's unification mechanism is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as comparing the resulting normal forms for equality on their abstract syntax trees.
 
-At the core of program unification is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as comparing the resulting normal forms for equality on their abstract syntax trees. It is also possible to check whether a program is a refinement of the other.
+Consider, for instance, the \texttt{double} function we have been referring to throughout this proposal. Figure \ref{fig:bg-unification-normalization} shows a model solution, a possible student answer and the normalized version of both programs. This is an example of how a small syntactical difference, an unnecessary anonymous function, is ignored thanks to semantics-preserving transformations.
 
-As an example, consider the function \mintinline{haskell}{double :: [Int] -> [Int]}, which doubles each element in a list of integers. The model solution, student answer and normalized version are shown below.
-
+\begin{figure}[H]
 \begin{minted}{haskell}
 -- Model solution
 double = map (* 2)
@@ -32,41 +54,6 @@ double = map (\x -> 2 * x)
 -- Normalized version (similar for both)
 double = map ((*) 2)
 \end{minted}
-
-\section{Limitations}
-
-\subsection{Style-unaware program matching}
-
-Ask-Elle's normalization procedure is designed to handle only small syntactical differences. Two programs can only be transformed to the same normal form if they follow the same style. As we saw above, this causes problems when attempting to provide hints for a program that diverges too much from its model solution. Let us consider again the \texttt{double} function, this time implemented in a recursive way:
-
-\begin{minted}{haskell}
--- Original program
-double [] = []
-double (x:xs) = (x * 2) : double xs
-
--- Normalized
-double = \y1 -> case y1 of
-    [] -> []
-    (x1 : x2) -> (:) ((*) x1 2) (double x2)
-\end{minted}
-
-It takes little time to see that this is basically a specialized reimplementation of map. Therefore it would be interesting to see it normalized as such:
-
-\begin{minted}{haskell}
--- Desired normalization
-double = map ((*) 2)
-\end{minted}
-
-Considering that reimplementing map is a common anti-pattern among beginners, it is unfortunate that they cannot get any hints in the presence of this style issue. In this regard, the lack of style-aware transformations has a clear impact on the user experience.
-
-\section{Proposed solution}
-
-On the long term, it seems worthwhile to enhance Ask-Elle with style-aware feedback and normalizations. Both features are closely related, as they both need to recognize the presence of style anti-patterns: the former, to report them; the latter, to normalize them. From the two, we think that normalization has a higher priority, since it enables giving hints in situations that were previously unsupported. We also expect most of the work on normalization to be reused when implementing style-aware feedback.
-
-In light of the previous considerations, we propose to:
-
-\begin{enumerate}
-    \item Identify the main style issues that prevent Ask-Elle from matching semantically equivalent programs;
-    \item Add new transformations to improve normalization of programs that present those issues;
-    \item Assess the improvements in program matching derived from the new transformations.
-\end{enumerate}
+\caption{Example of unification by normalization}
+\label{fig:bg-unification-normalization}
+\end{figure}
