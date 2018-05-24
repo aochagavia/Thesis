@@ -1,7 +1,7 @@
 \chapter{Introduction}
 \label{sec:intro}
 
-Ask-Elle \cite{2017askelle} is a programming tutor designed to help students learn the Haskell programming language. With Ask-Elle, teachers can specify exercises along with model solutions and students can solve them interactively. During the process, the system is able to check whether a student is on the right track and, in case they get stuck, it can provide relevant hints. Afterwards, it can check whether the provided solution is correct.
+Ask-Elle \cite{2017askelle} is a programming tutor designed to help students learn the Haskell programming language. With Ask-Elle, teachers can specify exercises along with \emph{model solutions} and students can solve them interactively. During the process, the system is able to check whether a student is on the right track and, in case they get stuck, it can provide relevant \emph{hints}. Afterwards, it can check whether the provided solution is correct.
 
 The exercises supported by Ask-Elle ask to implement functions. For instance, an exercise to teach basic concepts around lists and recursion could be to implement the \texttt{length} function.
 
@@ -38,11 +38,11 @@ double = map (* 2)
 \section{A fundamental limitation}
 \label{sec:intro-fundamental-limitation}
 
-A fundamental limitation of Ask-Elle is its inability to produce hints for programs that deviate too much from the model solution. In such cases, Ask-Elle returns an error message: \emph{You have drifted from the strategy in such a way that we can not help you any more}. With such a message, the only way forward is to start over from the very beginning (an empty program, represented as \texttt{?}) or to restore a previous version of the program known to be accepted by Ask-Elle.
+A fundamental limitation of Ask-Elle is its inability to produce hints for programs that \emph{deviate too much} from the model solution. In such cases, Ask-Elle returns an error message: \emph{You have drifted from the strategy in such a way that we can not help you any more}. With such a message, the only way forward is to start over from the very beginning (an empty program, represented as \texttt{?}) or to restore a previous version of the program known to be accepted by Ask-Elle.
 
 While the session from Figure \ref{fig:interactive-session-double} starts with the empty program, a student has the freedom to choose a different starting point. Consider, for instance, the case of a student that wants to implement a recursive version of \texttt{double}. Figure \ref{fig:limitations-recursive-double} shows said recursive implementation, which is semantically equivalent to the model solution, but has clear syntactical differences. Let us imagine that the student does not start with an empty program, but with a partial implementation of the function. How would an Ask-Elle session look like in this case? Figure \ref{fig:limitations-askelle-example-session} shows an expected yet unfortunate outcome: there are no hints available.
 
-The main way to deal with this limitation is by defining multiple model solutions. For instance, adding a recursive model solution would fix the problem in this concrete example. Still, this is not a scalable approach, since it requires a teacher to foresee the path a student will follow. Furthermore, there are just too many ways to drift from the model solution in terms of syntax.
+The main way to deal with this limitation is by defining multiple model solutions. For instance, adding a recursive model solution would fix the problem in this concrete example. Still, this is not a scalable approach, since it requires a teacher to foresee all paths a student might follow. Furthermore, there are just too many ways to drift from the model solution in terms of syntax.
 
 \begin{figure}
 \begin{minted}{haskell}
@@ -66,20 +66,18 @@ double (x:xs) = ?
 \label{fig:limitations-askelle-example-session}
 \end{figure}
 
-\section{Practical consequences}
-
-A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming, where students have little knowledge about Haskell programming style. This leads them to use style anti-patterns, which causes syntactical differences that Ask-Elle is unable to handle. In fact, our results show that style anti-patterns are an important cause of Ask-Elle failing to provide hints or to assess the correctness of a finished program (see Chapter \ref{sec:first-take}).
-
-In cases where a given anti-pattern is widespread between the students, it is possible to apply the workaround mentioned in Section \ref{sec:intro-fundamental-limitation} by adding a model solution that makes use of said anti-pattern. Still, this is hardly a viable option as the amount of model solutions required grows exponentially.
-
 \section{Research questions}
 
-In the previous sections we have described a key limitation of Ask-Elle and how it affects its target audience. This gives rise to the following questions:
+A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming, where students have little knowledge about Haskell programming style. Lack of experience leads them to use bad style, which causes syntactical differences that Ask-Elle is unable to handle, regardless of whether the program is semantically equivalent to the model solution. Our results show that bad style is an important cause of Ask-Elle failing to provide hints or to assess the correctness of a finished program (see Chapter \ref{sec:first-take}). We use the term \emph{style anti-pattern} to refer to a programming pattern that exhibits bad style.
+
+In cases where a given anti-pattern is widespread between the students, it is possible to apply the workaround mentioned in Section \ref{sec:intro-fundamental-limitation} by adding a model solution that makes use of said anti-pattern. Still, this is hardly a viable option as the amount of model solutions required grows exponentially. This gives rise to the following questions:
 
 \begin{enumerate}
-    \item Which are the main style anti-patterns that are causing problems to Ask-Elle?
+    \item What are the main style anti-patterns that are causing problems to Ask-Elle?
     \item How can we improve Ask-Elle's capability to give hints in the presence of style anti-patterns?
 \end{enumerate}
+
+Both questions are closely related. Improving Ask-Elle is subject to identifying the most relevant style anti-patterns that are causing problems. This way, when tackling the second question, we can focus on the anti-patterns with the most impact.
 
 This proposal is structured as follows. Chapter \ref{sec:background} presents the necessary background knowledge about Ask-Elle's architecture. Afterwards, Chapter \ref{sec:related-work} refers to related work relevant to our research. Then, Chapter \ref{sec:first-take} shows the first results of our efforts tackling style anti-patterns. Finally, Chapter \ref{sec:timetable} shows a timetable with a proposed roadmap.
 

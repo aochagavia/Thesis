@@ -57,6 +57,9 @@ extra-deps:
 - ideas-1.6
 - HDBC-sqlite3-2.3.3.1
 
+ghc-options:
+  askelle-cli: -fno-warn-missing-signatures -fno-warn-type-defaults
+
 # Override default flag values for local packages and extra-deps
 # flags: {}
 

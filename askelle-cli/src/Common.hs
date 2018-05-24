@@ -4,38 +4,36 @@ module Common (
     normalize, normalizeM
 ) where
 
-import Control.Monad.Writer (Writer, runWriter)
-
 import System.Directory (listDirectory)
-import System.FilePath ((</>), takeBaseName, splitDirectories)
+import System.FilePath ((</>), takeExtension)
 
 import Language.Haskell.Compile (safeCompile')
 import qualified Language.Haskell.Compiler.Helium as H
-import Language.Haskell.Equality (normalise')
-import Language.Haskell.Syntax (Module(Module), Body(Body), Name(Ident))
-import Language.Haskell.Transformations.Transformation (Transformation)
+import qualified Language.Haskell.Equality as E
+import Language.Haskell.Syntax (Module(Module), Body(Body), Name)
+import Language.Haskell.Transformations.Transformation (NormPass, NormOptions(..), execNorm)
 
 type Import = (String, String)
 
 toOptions :: [Import] -> H.AskelleOptions
 toOptions imports = H.AskelleOptions
-                  { H.filterTypeSigs = True
+                  { H.filterTypeSigs = False
                   , H.imports = imports
                   }
 
 loadSources :: String -> IO [(String, String)]
 loadSources path = do
     fileNames <- map (path </>) <$> listDirectory path
-    files <- mapM readFile fileNames
+    files <- mapM readFile $ filter (\f -> takeExtension f == ".hs") fileNames
     return $ zip fileNames files
 
-normalize :: String -> String -> [Import] -> Either String (Maybe Module)
-normalize fname source imports = fst . runWriter <$> normalizeM fname source imports
+normalize :: NormOptions -> String -> H.AskelleOptions -> Either String (Maybe Module)
+normalize opts@(NormOptions { mainFns }) source options = execNorm opts <$> normalizeM mainFns source options
 
 -- Note: we treat programs that normalize to nothing as compile errors
-normalizeM :: String -> String -> [Import] -> Either String (Writer [Transformation] (Maybe Module))
-normalizeM fname source imports =
-    fmap filterEmptyModule <$> normalise' [Ident fname] <$> safeCompile' source (toOptions imports)
+normalizeM :: [Name] -> String -> H.AskelleOptions -> Either String (NormPass (Maybe Module))
+normalizeM mainFns source options =
+    fmap filterEmptyModule <$> E.normalize' mainFns <$> safeCompile' source options
     where
         isEmpty (Module _ (Body [])) = True
         isEmpty _ = False

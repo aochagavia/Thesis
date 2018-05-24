@@ -99,7 +99,7 @@ The first two programs are recognized by HLint, but not the third, because HLint
 Besides the style issues mentioned above, there are other normalization issues. We list them below:
 
 \begin{itemize}
-    \item Lack of dead code removal: some student programs include dead functions, which are not present in most other solutions. Since normalization does not remove dead functions, unification always fails in this case.
+    \item Lack of dead code removal: some student programs include dead bindings and dead branches, which are not present in most other solutions. Since normalization does not remove them, unification always fails in this case.
     \item Lack of irrelevant code removal: the description of the assignment states that the \texttt{parseTable} function always receives a non-empty list as parameter. However, some students add a match for the empty case and raise an error, as shown in Figure \ref{fig:irrelevant-code-error}. Again, most other solutions avoid such code, so this causes unification failure.
     \item Lack of inlining: some students use auxiliary functions that are absent in most other solutions. This prevents their submissions from being part of the bigger clusters.
     \item Unnecessary difference between complete and partial application: \texttt{parseTable = map words} and \texttt{parseTable xs = map words xs} are not considered equivalent under normalization. This results in two program clusters instead of one.
@@ -137,6 +137,10 @@ Based on the results of our analysis, we add the following transformations to As
     \item Eta reduce top-level functions.
 \end{itemize}
 
+[FIXME 1: explain why removing irrelevant code is a good idea, or remove it and say that our dead code removal takes the specification into account, meaning that we also remove code that is dead according to the specification]
+
+[FIXME 2: add references to the previous transformations in the literature]
+
 We validate the resulting normalization procedure through property-based testing. Each student program is normalized and the result tested against QuickCheck. This way, we can increase our confidence in the thought that normalization is indeed semantics-preserving.
 
 \section{Results}
@@ -148,7 +152,32 @@ Adding these transformations causes 109 of the 111 solutions to be clustered in 
     \item \mintinline{haskell}{parseTable xs = [words x | x <- xs]} (10 elements)
 \end{enumerate}
 
-From the remaining two submissions, one uses a function from an external package and is therefore expected to fail unification with the rest. The other submission is correct, but contains irrelevant code that was not be removed by our transformation passes.
+From the remaining two submissions, one uses a function from an external package and is therefore expected to fail unification with the rest. The other submission is correct, but could not be normalized because it presents two edge cases. Figure \ref{fig:exercise1-two-edge-cases} shows the code in question, followed by an explanation of the problem in more detail.
+
+\begin{figure}[H]
+\begin{minted}{haskell}
+parseTable []     = [[]]
+parseTable [x]    = [words x]
+parseTable (x:xs) = words x : parseTable xs
+\end{minted}
+\caption Two edge cases to our normalization procedure
+\label{fig:exercise1-two-edge-cases}
+\end{figure}
+
+According to our definition of code irrelevance, the base case of this function should be removed. The specification says that the function parameter will never be the empty list, therefore we can treat that part of the function as dead code. However, our heuristic to detect irrelevant code fails in this edge case.
+
+Even after removing the base case, a next step would be required to rewrite the function as a map. In the general case, this transformation is not semantics-preserving, because map does handle the case of the empty list, as shown below.
+
+\begin{minted}{haskell}
+-- Before, empty list raises an error
+parseTable [x]    = [words x]
+parseTable (x:xs) = words x : parseTable xs
+
+-- After, empty list returns empty list
+parseTable xs = map words xs
+\end{minted}
+
+Still, the transformation above can be considered semantics-preserving in our case, as long as the specification is satisfied. Assuming that the empty list is outside of the domain of the function, the semantics of both versions are equivalent. Unfortunately, our map transformation heuristic does not handle a complex case such as this. That would require reasoning about the interaction between the domain of the function and its semantics.
 
 % The solution here would be to recognize and refactor those anti-patterns. Regarding the previous code examples, the following refactorings would be suitable:
 

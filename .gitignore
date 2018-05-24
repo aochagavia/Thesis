@@ -6,10 +6,8 @@ other_stuff
 proposal/bundle.md
 DataVisualization/img
 DataVisualization/data
+charts
 
 *.pdf
 .Rproj.user
-*.Rhistory
-
-# On the long run we should commit this directory
-solutions
+.Rhistory

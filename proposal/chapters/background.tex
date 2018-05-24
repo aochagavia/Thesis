@@ -25,21 +25,21 @@ According to the finite-state machine perspective on strategies, the algorithm u
     \item Retrieve a list of all transitions available from that state and present them in a user-friendly fashion.
 \end{enumerate}
 
-From these two steps, the second is a common operation on finite-state machines. The first one, however, is much more involved, as it requires comparing programs for equivalence. This is the subject of program unification, which is described below.
+From these two steps, the second is a common operation on finite-state machines. The first one, however, is much more involved, as it requires unifying programs.
 
 \section{Program unification}
 
-The process of comparing two programs for semantic equivalence is called program unification. This is what Ask-Elle does when comparing a student program to a model solution.
+The process of comparing two programs for semantic equivalence up to holes is called program unification. This is what Ask-Elle does when comparing a student program to a model solution.
 
 Since the problem of program unification is undecidable in the case of a complex language such as Haskell (see Section \ref{sec:related-work-unification}), Ask-Elle's unification procedure has the following possible outcomes:
 
 \begin{enumerate}
     \item The programs are semantically equivalent;
     \item One program is an incomplete version of the other;
-    \item Nothing can be concluded.
+    \item Equivalence cannot be concluded.
 \end{enumerate}
 
-At the core of Ask-Elle's unification mechanism is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as comparing the resulting normal forms for equality on their abstract syntax trees.
+At the core of Ask-Elle's unification mechanism is the idea of normalization. Before comparing the programs, they go through a series of semantics-preserving transformations that result in a normal form. This way, comparing the programs becomes as simple as syntactically unifying the resulting normal forms.
 
 Consider, for instance, the \texttt{double} function we have been referring to throughout this proposal. Figure \ref{fig:bg-unification-normalization} shows a model solution, a possible student answer and the normalized version of both programs. This is an example of how a small syntactical difference, an unnecessary anonymous function, is ignored thanks to semantics-preserving transformations.
 
