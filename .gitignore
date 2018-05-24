@@ -6,6 +6,9 @@ other_stuff
 proposal/bundle.md
 DataVisualization/img
 DataVisualization/data
+proofs/*.aux
+proofs/*.glob
+proofs/*.vo
 charts
 
 *.pdf

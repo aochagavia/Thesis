@@ -1,5 +1,9 @@
 (* http://coq-blog.clarus.me/write-a-script-in-coq.html *)
 
+Add LoadPath ".".
+
+Require Import CpdtTactics.
+
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
@@ -180,7 +184,8 @@ Theorem map_id : forall (T : Type) (xs : list T), map id xs = id xs.
     intros T xs.
     induction xs.
       auto.
-      simpl. rewrite id_works. rewrite id_works. apply (cong_cons_1 a (map id xs) xs). auto. Qed.
+      simpl. rewrite id_works. rewrite id_works. apply (cong_cons_1 a (map id xs) xs). auto.
+  Qed.
 
 Theorem foldr_empty : forall {A B : Type} (f : B -> A -> A) (acc : A),
     fold_right f acc [] = acc.
@@ -239,7 +244,7 @@ Theorem cons_append : forall T (x : T) (xs ys : list T), (x :: xs) ++ ys = x :: 
   Proof. auto. Qed.
 
 Theorem append_append : forall T (xs ys zs : list T), (xs ++ ys) ++ zs = xs ++ (ys ++ zs).
-  Proof. intros. rewrite (app_assoc xs ys zs). auto. Qed.
+  Proof. crush. Qed.
 
 Theorem is_nothing : forall T (x : option T), x = None <-> isNothing x = true.
   Proof. intros. unfold isNothing. destruct x. unfold iff.
@@ -248,7 +253,7 @@ Theorem is_nothing : forall T (x : option T), x = None <-> isNothing x = true.
   Qed.
 
 Theorem is_just : forall T y (x : option T), x = Some y -> isJust x = true.
-  Proof. intros. unfold isJust. destruct x. reflexivity. discriminate. Qed.
+  Proof. crush. Qed.
 
 Theorem maybe_to_list_1 : forall T (x : option T), maybeToList x = [] <-> isNothing x = true.
   Proof. intros. destruct x.
@@ -288,7 +293,7 @@ Theorem and_map : forall T (f : T -> bool) xs, and (map f xs) = forallb f xs.
   Qed.
 
 Theorem all_id : forall xs, forallb id xs = and xs.
-  Proof. intros. induction xs. auto. simpl. unfold andb. rewrite IHxs. reflexivity. Qed.
+  Proof. crush. Qed.
 
 Theorem simplify_if : forall (cond : bool), (if cond then true else false) = cond.
   Proof. destr_bool. Qed.
