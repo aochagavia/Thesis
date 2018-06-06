@@ -1,0 +1,42 @@
+\chapter{Conclusion}
+\label{sec:conclusion}
+
+Lorem ipsum
+
+% We discovered style and normalization problems. Both have a role in giving hints.
+
+% Note: we have an answer to question 1 (main style anti-patterns that are causing problems), but we are still missing an answer to question 2 (how to improve the current situation?). However, we have at least provided a building block towards solving question 2.
+
+\section{Future work}
+
+Lorem ipsum
+
+% \subsection{Restrict to a subset of Haskell}
+
+% The alternatives that restrict the language, such as Miller's \cite{1991miller}, are too impractical to consider, as they would require rejecting valid Haskell programs. Futhermore, most research on enabling higher-order unification by restricting the language is done at the level of the lambda calculus, while Haskell provides much higher-level constructs. The interaction between those restrictions and Haskell's features is uncharted territory, out of the scope of this research.
+
+% Bring this uncharted territory into view!
+
+% \subsection{Automated theorem proving}
+
+% Modify Ask-Elle in such a way that student programs are rewritten as Coq programs and attempt to unify them there. Try to create a custom tactic that solves the unification problem easily. Our current results show that this could be doable.
+
+% [FIXME: cite Chlipala's *crush* tactic]
+
+% \subsection{Stepwise feedback}
+
+% Quantify the impact of our transformations on Ask-Elle's ability to give hints. Right now, we know it is not ideal, since many of the transformations make little sense in the context of incomplete programs (e.g. you are writing an eta-expanded function, but the model solution is eta-reduced, there is no way they can unify until you finish writing your function)
+
+% Tell about the stuff Alejandro is doing
+
+% \subsection{Open style and normalization issues}
+
+% Reimplementing higher-order list functions using \texttt{[x]} as a base case instead of the empty list. While this is correct according to the specification of the assignment, it fails to recognize...
+
+% No solution for indexing
+
+% Clearly, not all of the issues could be addressed. For instance, transforming a solution that uses list indexing into an idiomatic solution based is a non-trivial task. The same goes for reimplementations of recursive functions where the base case is \texttt{[x]} instead of the empty list. In general, we tried to avoid implementing transformations that would require more complex analysis than only syntactical, to stay within the current paradigm of Ask-Elle.
+
+% comparing two lambdas where one is eta reduced and the other is not... We could have come up with an advanced eta reduction mechanism, but did not... Future work!
+
+% Another one is the combination of foldr and map. Now I think about it, it should be possible to add a new transformation that deals with this... But the win is probably not worth the effort. Future work!

@@ -1,0 +1,70 @@
+\documentclass[twoside,openright,titlepage,numbers=noenddot,headinclude,
+                footinclude=true,cleardoublepage=plain,abstractoff, % <--- obsolete, remove (todo)
+                BCOR=5mm,paper=a4,pagesize,fontsize=11pt,%11pt,a4paper,%
+                american,%
+                ]{scrreprt}
+
+\input{classicthesis-config}
+
+\begin{document}
+\newcommand{\haskell}[1]{\mintinline{haskell}{#1}}
+
+\frenchspacing
+\raggedbottom
+\selectlanguage{american}
+\pagenumbering{roman}
+\pagestyle{plain}
+
+%%% Frontmatter
+\include{frontmatter/Titlepage}
+\cleardoublepage\include{frontmatter/Abstract}
+\cleardoublepage\include{frontmatter/Acknowledgments}
+\pagestyle{scrheadings}
+\cleardoublepage\include{frontmatter/Contents}
+
+%%% Mainmatter
+\pagenumbering{arabic}
+%\cleardoublepage\part{Introduction}
+\include{chapters/intro}
+\include{chapters/background}
+\include{chapters/related-work}
+\include{chapters/methodology}
+\include{chapters/analysis}
+\include{chapters/transformations}
+
+% \cleardoublepage\part{The journey}
+% \include{chapters/exercise1}
+% \include{chapters/exercise2}
+% \include{chapters/exercise3}
+% \include{chapters/exercise4}
+% \include{chapters/exercise5}
+% \include{chapters/exercise7}
+% \include{chapters/exercise8}
+
+\include{chapters/discussion}
+\include{chapters/conclusion}
+
+%%% Appendix
+\appendix
+\cleardoublepage\part*{Appendix}
+\include{appendix/measurements}
+\include{appendix/transformations}
+\include{appendix/proofs}
+
+%%% BEGIN Bibliography (for some reason it wasn't rendered if included from a file)
+\cleardoublepage
+\manualmark
+\markboth{\spacedlowsmallcaps{\bibname}}{\spacedlowsmallcaps{\bibname}} % work-around to have small caps also
+%\phantomsection
+\refstepcounter{dummy}
+\addtocontents{toc}{\protect\vspace{\beforebibskip}} % to have the bib a bit from the rest in the toc
+\addcontentsline{toc}{chapter}{\tocEntry{\bibname}}
+\label{app:bibliography}
+\bibliographystyle{plain}
+\bibliography{../bibliography}
+%%% END bibliography
+
+%%% Backmatter
+%\cleardoublepage\include{frontmatter/Colophon}
+
+\end{document}

@@ -1,0 +1,11 @@
+*.aux
+*.bbl
+*.blg
+*.toc
+*.gz
+*.log
+*.pdf
+*.out
+*.fdb_latexmk
+*.fls
+_minted-thesis/
