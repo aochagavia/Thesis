@@ -1,21 +1,23 @@
-\chapter{Analysis results}
+\chapter{Analysis results and new transformations}
 \label{sec:analysis-results}
 
 % Q: In which cases does normalization not work as expected?
 
+% High-level: preconditions, lists, maybe, booleans, patterns, misc
+
 % FIXME: intro
 
-From a high-level perspective, we observed mainly three categories of issues that cause problems to normalization. We noticed that many students struggled with the concept of preconditions, we identified several relevant programming style issues in student programs and we found limitations in Ask-Elle's normalization procedure. In all three cases, we observed a clear negative effect on Ask-Elle's ability to unify programs.
+% OLD:
+% From a high-level perspective, we observed mainly three categories of issues that cause problems to normalization. We noticed that many students struggled with the concept of preconditions, we identified several relevant programming style issues in student programs and we found limitations in Ask-Elle's normalization procedure. In all three cases, we observed a clear negative effect on Ask-Elle's ability to unify programs.
 
-\section{Confusion around preconditions}
+\section{Preconditions}
+\label{sec:analysis-preconditions}
 
-Throughout the assignment, some functions are provided of preconditions to simplify their implementation. For instance, knowing that a list will never be empty means that the student no longer has to write additional code to handle that case.
+Throughout the assignment, some functions are provided of preconditions to simplify their implementation. For instance, knowing that a list will never be empty means that the student no longer has to write additional code to handle that case. Contrary to the expectations, preconditions caused confusion among students, instead of leading to simpler code. Below we explain how this came to be and the consequences for Ask-Elle. %Below we consider the case of Exercise 3 to illustrate the problem.
 
-Contrary to the expectations, preconditions caused confusion among the students, instead of leading to simpler code. Below we consider the case of Exercise 3 to illustrate the problem.
+\subsection{Explicit and implicit preconditions}
 
-\subsection{Simplicity}
-
-In the assignment document, Exercise 3 specifies that the function \haskell{printField :: Int -> String -> String} should satisfy the property $\forall n\ s.\ n \geq length\ s \Rightarrow length\ (printField\ n\ s) \equiv n$. Here, the left side of the implication is the precondition of the function. Therefore, a good solution is expected to assume that $n \geq length\ s$, without checking whether it holds, as illustrated by Figure \ref{sec:discussion-preconditions-model}.
+In the assignment document, Exercise 3 specifies that the function \haskell{printField :: Int -> String -> String} should satisfy the property $\forall n\ s.\ n \geq length\ s \Rightarrow length\ (printField\ n\ s) \equiv n$. Here, the left side of the implication is the precondition of the function. Therefore, a good solution is expected to assume that $n \geq length\ s$, without checking whether it holds, as illustrated by Figure \ref{fig:ex3-model-solution}.
 
 \begin{figure}[H]
 \centering
@@ -25,21 +27,53 @@ printField n s
     | otherwise = s ++ padding
     where padding = replicate (n - length s) ' '
 \end{minted}
-\caption{Exercise 3: Model solution}
-\label{sec:discussion-preconditions-model}
+\caption{Exercise 3 - Model solution}
+\label{fig:ex3-model-solution}
 \end{figure}
 
-Notice that, while there is no explicit checking for the precondition, the function implicitly specifies what should happen in case the precondition does not hold. If $n < length\ s$, then $n - length\ s < 0$, then \haskell{replicate (n - length s) ' ' = []}. Therefore, this particular implementation of \haskell{printField} will return the original value of \haskell{s} whenever the precondition does not hold.
+Besides Exercise 3, no other exercise in the assignment mentions properties or preconditions explicitly. However, it is possible to deduce many preconditions from the context. Table \ref{tb:preconditions-implicit} presents a summary of them.
 
-\subsection{Confusion}
+\begin{table}
+\centering
+\begin{tabular}{ m{5em} | m{20em} }
+Exercise & Precondition \\
+\hline
+1 & The first argument is a non-empty list \\
+\hline
+2 & The first argument is a non-empty list \\
+\hline
+4 & The first argument is a non-empty list \\
+\hline
+5 & The first argument is a well-formed table \\
+\hline
+6 & The first argument is a well-formed table \\
+\hline
+7 & The third argument is a well-formed table \\
+\hline
+8 & The second argument is a well-formed table
+\end{tabular}
+\caption{Implicit preconditions}
+\label{tb:preconditions-implicit}
+\end{table}
 
-Many students added explicit checks to handle the case in which the precondition does not hold. Since the assignment does not specify what the function should return in such a case, students were allowed to write anything that seemed sensible to them.
+\subsection{Preconditions and semantics}
+\label{sec:preconditions-and-semantics}
 
-\subsubsection{Precondition checking with differing semantics}
+Preconditions allow functions with different semantics to be considered correct. In case the precondition does not hold, the program is allowed to do anything. Therefore, it is possible to have two programs that behave in the same way when the precondition holds, but do different things when it does not hold.
+
+Notice that writing a submission to an exercise always involves specifying what to do when the precondition does not hold, even when there is no explicit checking for the precondition. Consider the solution to Exercise 3 that we present in Figure \ref{fig:ex3-model-solution}. If $n < length\ s$, then $n - length\ s < 0$, then \haskell{replicate (n - length s) ' ' = []}. Therefore, this particular implementation of \haskell{printField} will return \haskell{s} whenever the precondition does not hold.
+
+% The relationship between preconditions and semantics has implications...
+
+\subsection{Precondition checking}
+
+Many students add explicit checks to handle the case in which the precondition does not hold. Since the assignment does not specify what the function should return in such a case, students are allowed to write anything that seems sensible to them.
+
+\subsubsection{Differing semantics}
 
 Figure \ref{fig:analysis-precondition-example} shows a submission to Exercise 3 where the student adds a guard checking for $n < length\ s$. On the right-hand side of the guard, we observe that the student truncates the string.
 
-Comparing this implementation to the model solution in Figure \ref{sec:discussion-preconditions-model}, we can see that the semantics have changed. The model solution returns \haskell{s} when the precondition does not hold, while this implementation returns \haskell{take n s}.
+Comparing this implementation to the model solution in Figure \ref{fig:ex3-model-solution}, we can see that the semantics have changed. The model solution returns \haskell{s} when the precondition does not hold, while this implementation returns \haskell{take n s}.
 
 This is a case in which checking for the precondition leads to a program with different semantics when compared to the model solution. In the context of Ask-Elle, this means that normalizing both programs  results in different normal forms.
 
@@ -52,15 +86,15 @@ printField n s
     | otherwise     = s ++ padding
     where padding = replicate (n - length s) ' '
 \end{minted}
-\caption{Exercise 3: Explicit precondition with differing semantics}
+\caption{Exercise 3 - Explicit precondition checking; differing semantics}
 \label{fig:analysis-precondition-example}
 \end{figure}
 
-\subsubsection{Precondition checking with similar semantics}
+\subsubsection{Similar semantics}
 
 In some cases, checking for the precondition did not result in different semantics relative to the model solution. Figure \ref{fig:analysis-precondition-similar-semantics} shows a function that explicitly checks for the precondition and returns \haskell{s} when the precondition does not hold.
 
-Even though the semantics of the program are similar to those of the model solution, normalizing both will yield different normal forms. Below we explore a possible way of dealing with this issue.
+In this case, the semantics of the program are similar to those of the model solution, but normalizing both still yields different normal forms.
 
 \begin{figure}
 \centering
@@ -71,212 +105,530 @@ printField n s
     | otherwise     = s ++ padding
     where padding = replicate (n - length s) ' '
 \end{minted}
-\caption{Exercise 3: Explicit precondition with similar semantics}
+\caption{Exercise 3 - Explicit precondition checking; similar semantics}
 \label{fig:analysis-precondition-similar-semantics}
 \end{figure}
 
-\subsection{Normalization up to preconditions}
+\subsubsection{Additional complications}
 
-Program slicing
+Since a precondition is nothing more than a logical expression, it can be written in multiple ways. This offers even more challenges, because a precondition that is checked in the code could appear in any form as long as its meaning does not change. In fact, submissions to Exercise 3 sometimes check the precondition using its negation (\haskell{n < length s}), sometimes split the check in three guards (\haskell{n > length s}, \haskell{n == length s} or \haskell{otherwise}) and sometimes do the check in a completely different way.
 
-Remove unreachable branches!
+Additionally, it is possible to implicitly check the precondition without resorting to \haskell{if} expressions or guards. For instance, in Figure \ref{fig:ex3-implicit-precondition-checking} a student calls the \haskell{max} function to ensure that replicate never receives a negative argument. This is unnecessary, since it is guaranteed by the precondition of the function.
 
-Problem... How do we know they are unreachable?
-
-Section \ref{sec:discussion-preconditions} considers a possible way to deal with this issue in the future, through a normalization mechanism that takes preconditions into account.
-
-% Note: we could talk about implicit preconditions in other exercises that call this function. Very clear in 7 and 8, which only accept well formed tables (though I am not sure that requirement is derived from this precondition).
-
-\section{Style issues}
-
-We identified problems related to four domains: lists, booleans, the \haskell{Maybe} type and pattern matching. They are described below.
-
-\subsection{Lists}
-
-The assignment expects students to manipulate lists by combining list-specific functions. We observed two ways this can go wrong.
-
-\subsubsection{Explicit recursion}
-
-Many students fail to use higher-order functions in their implementation. When this happens, they resort to recursive functions, occasionally reimplementing a higher-order function without realizing. For instance, we identified reimplementations of \haskell{map}, \haskell{filter} and \haskell{zip}.
-
-To a lesser extent, we also observed that some students had trouble using pattern matching when defining recursive functions. Instead of pattern matching, some of them used guards to check whether the list was empty. This was then combined with functions such as \haskell{head} and \haskell{tail}. We even found one case of a student that used guards \emph{and} pattern matching in the same function.
-
-% FIXME: add examples
-
-\subsubsection{Suboptimal function usage}
-
-The list below shows an overview of the issues we found:
-
-\begin{itemize}
-    \item Using list indexing to manipulate lists, instead of higher-order functions;
-    \item Using \haskell{head}, \haskell{!! 0} and \haskell{tail} instead of pattern matching;
-    \item Using append (\haskell{++}) when cons (\haskell{:}) would have been sufficient;
-    \item Using \haskell{concatMap} when \haskell{map} would have been sufficient;
-    \item Using \haskell{mapMaybe} when \haskell{map} would have been sufficient;
-    \item Using \haskell{concat (replicate x [e])} instead of \haskell{replicate x e};
-    \item Using \haskell{map} multiple times, instead of merging them into one (map fusion);
-    \item Applying \haskell{map} only after pattern matching on the list, to ensure it is not empty (as if \haskell{map} were unable to handle the empty list);
-    \item Applying \haskell{foldr} to the empty list;
-    \item Using \haskell{foldr} when simpler alternatives exist; % unsolved
-    \item Reimplementing functions (e.g. \haskell{foldr (++) []} instead of \haskell{concat}). % Note: this can get VERY creative... With filter, zip, map, intercalate, etc.
-\end{itemize}
-
-\subsection{Booleans}
-
-Some functions required by the assignment involve dealing with boolean values. We also found a series of issues on this domain:
-
-\begin{itemize}
-    \item Reimplementing functions: \haskell{and}, \haskell{all}, \haskell{not};
-    \item Checking whether a boolean value is equal to true instead of using it directly (i.e. \haskell{x == True} instead of \haskell{x});
-    \item Unnecessary if statement (i.e. \haskell{if cond then True else False} instead of \haskell{cond});
-    \item Nested if statements that check for the same condition.
-\end{itemize}
-
-\subsection{Maybe}
-
-Exercises 7 and 8 rely on the \haskell{Maybe} type to handle edge cases. Students are expected to use functions from the standard library to manipulate \haskell{Maybe} values, but many of them reimplemented them without realizing. We observed reimplementations of \haskell{fromMaybe}, \haskell{fromJust}, \haskell{isJust}, \haskell{isNothing} and \haskell{fmap}.
-
-Another style problem consists of using a combination of \haskell{isJust} and \haskell{fromJust}, instead of pattern matching, to extract the value from a \haskell{Maybe}. We also observed a disguised version of this pattern, where students use \haskell{fromMaybe} with a magic default value, which is later checked by an if statement. In case the output of \haskell{fromMaybe} turns out to be the magic value, then the original \haskell{Maybe} object was \haskell{Nothing}. Otherwise, it was \haskell{Just}. The code below illustrates the pattern:
-
+\begin{figure}
+\centering
 \begin{minted}{haskell}
-let x = fromMaybe (-1) maybeX
-in if x == (-1) then e else f x
+printField n s
+    | all isDigit s     = r ++ s
+    | otherwise         = s ++ r
+    where
+        r = replicate a ' '
+        a = max 0 (n - length s)
 \end{minted}
+\caption{Exercise 3 - Implicit precondition checking}
+\label{fig:ex3-implicit-precondition-checking}
+\end{figure}
 
-% Note: looks like maybe is an area where advanced analysis would yield interesting results (non-syntactic)... We only dealt with function reimplementation...
+\subsection{Normalization up to preconditions}
+\label{sec:analysis-precondition-solution}
 
-\subsection{Patterns}
+The ideal solution to the problems outlined above is to integrate the preconditions in our reasoning of semantic equivalence. If we assume that the precondition always holds, then we can ignore the code that is meant to handle the case when the precondition does not hold. More specifically, we can treat such code as dead, because we know it will never be executed.
 
-On the domain of pattern matching, we observed that some students deconstructed and reconstructed tuples instead of using the original tuple directly. This resulted in code like \haskell{let (a, b) = x in f (a, b)}, when \haskell{f x} would have been sufficient.
+The main challenge with this approach is that it requires identifying which parts of the code are dead according to the precondition. In the general case, this amounts to solving the halting problem\footnote{Detecting dead code, even without taking preconditions into account, amounts to solving the halting problem. We can prove this by contradiction. Consider a program P that can detect dead code in the general case and a program A that we would like to check for termination. To this purpose, we add a line of code at the end of A. If P says the code is dead, we know that A does not terminate. If P says the code is live, we know that A does terminate.}. Therefore, we limit ourselves to a heuristic that removes pattern matching on the empty list when we know it should be non-empty. This is illustrated by Figure \ref{fig:preconditions-remove-base-case}.
 
-Besides the aforementioned style issue, some students resorted to nested pattern matching in cases where it was unnecessary. The table below shows an example of this, where the program to the left uses nested pattern matching and the one to the right does not.
+\begin{figure}
+\centering
+\emph{Before}
+\begin{minted}{haskell}
+parseTable [] = error "empty list in parseTable"
+parseTable xs = map words xs
+\end{minted}
+\bigskip
+\emph{After}
+\begin{minted}{haskell}
+parseTable xs = map words xs
+\end{minted}
+\caption{Exercise 1 - Normalization up to preconditions}
+\label{fig:preconditions-remove-base-case}
+\end{figure}
 
-\begin{center}
-\begin{tabular}{ m{17em} | m{13em} }
-    \begin{minted}{haskell}
-    case a of
+\section{Lists}
+
+The assignment expects students to manipulate lists by combining list-specific functions. Therefore it is not surprising that many normalization problems come from the domain of lists.
+
+\subsection{Explicit recursion}
+
+Many students fail to use higher-order functions and resort to recursion instead, occasionally reimplementing a higher-order function without realizing. We identified reimplementations of \haskell{map}, \haskell{filter} and \haskell{zip}.
+
+\subsubsection{Function abstraction heuristic}
+
+As an example of a function where the student has reimplemented \haskell{map}, let us consider Figure \ref{fig:ex1-reimplementation-map}.  It is clear that the normal form does not match the model solution in Figure \ref{fig:ex1-model-solution}.
+
+To tackle this problem, we add a heuristic that is able to replace recursive functions by their standard library counterparts. The heuristic detects reimplementations of \haskell{map}, \haskell{filter} and \haskell{zip}.
+
+With this heuristic in place, the function from Figure \ref{fig:ex1-reimplementation-map} is normalized to the same normal form as the model solution.
+
+\begin{figure}
+\begin{minted}{haskell}
+parseTable = map words
+\end{minted}
+\caption{Exercise 1 - Model solution}
+\label{fig:ex1-model-solution}
+\end{figure}
+
+\begin{figure}
+\centering
+\emph{Student submission}
+\begin{minted}{haskell}
+parseTable [] = []
+parseTable (x:xs) = words x : parseTable xs
+\end{minted}
+\bigskip
+\emph{Normalized version}
+\begin{minted}{haskell}
+parseTable = fix (\rec xs -> case xs of
         [] -> []
-        xs -> let (x : _) = xs
-              in e
-    \end{minted}
-    &
-    \begin{minted}{haskell}
-    case a of
-        [] -> []
-        x : xs -> e
-    \end{minted}
+        y : ys -> words y : rec ys
+    )
+\end{minted}
+\caption{Exercise 1 - Reimplementation of map}
+\label{fig:ex1-reimplementation-map}
+\end{figure}
+
+% FIXME: quantify somehow the impact of this heuristic?
+
+\subsubsection{Grouping recursive submissions in a single cluster}
+
+The function abstraction heuristic works well for simple functions such as \haskell{map}, \haskell{filter} and \haskell{zip}. However, it is not clear whether more complex cases like \haskell{foldr} can be abstracted by a general-purpose heuristic. In such cases, we give up on trying to remove recursion and focus instead on grouping recursive submissions in a single cluster.
+
+An example of this is Exercise 2. Figure \ref{fig:ex2-model-solutions} shows two model solutions, representing the cluster of submissions using \haskell{foldr} and the cluster using recursion.
+
+This approach works great when the recursive submissions are somewhat similar to each other. In fact, the biggest cluster in Exercise 2 after our improvements consists of recursive submissions and accounts for 35\% of the total submissions.
+
+\begin{figure}
+\centering
+\emph{Model solution using foldr}
+\begin{minted}{haskell}
+printLine = foldr (\x xs -> '+' : replicate x '-' ++ xs) "+"
+\end{minted}
+\bigskip
+\emph{Recursive model solution}
+\begin{minted}{haskell}
+printLine []     = "+"
+printLine (x:xs) = "+" ++ replicate x '-' ++ printLine xs
+\end{minted}
+\caption{Exercise 2 - Model solutions}
+\label{fig:ex2-model-solutions}
+\end{figure}
+
+Still, there are always creative submissions that refuse to be normalized to the same cluster. Two common problems on this regard are caused by preconditions and by using guards instead of pattern matching. The submission to Exercise 2 in Figure \ref{fig:ex2-reimplementation-map-guards} features both:
+
+\paragraph{Preconditions}
+
+As discussed in Section \ref{sec:preconditions-and-semantics}, preconditions in exercises allow functions with different semantics to be considered correct. Semantic differences are introduced because of variations in the way the exceptional case is handled.
+
+In Exercise 2, the precondition of \haskell{printLine} is that the list cannot be empty. Because of the this, we see a variation between the solution in Figure \ref{fig:ex2-model-solutions} and Figure \ref{fig:ex2-reimplementation-map-guards}. The former returns \haskell{"+"} when the list is empty, while the latter crashes. This means that no amount of semantics-preserving transformations can bring both programs to the same normal form.
+
+% FIXME: say that this also causes problems to the map heuristic, because some people reimplement map with a singleton list as base case
+
+\paragraph{Guards and pattern matching}
+
+Using guards instead of pattern matching does not alter the semantics of the program. This means that it is possible to implement a semantics-preserving transformation to replace the guards by pattern matching.
+
+In the example, the student checks whether the list is empty using the \haskell{length} function. This check could clearly be replaced by a \haskell{case} expression that matches on the list, where the empty case jumps to the right-hand side of the first guard and the other case jumps to the second.
+
+We do not implement such a transformation, however, because it seems too ad-hoc. It works only for lists and only when the condition is \haskell{length xs == 0}. Ideally, we would like to have a generalized version, working on other data types as well (such as \haskell{Maybe}) and able to handle a wider range of conditions. Because of time constraints and the low number of submissions that would benefit from such a transformation, we leave it as a candidate for future work.
+
+% Future work: explore transforming guards into pattern matching
+
+% Discussion: this, together with the precondition thing, hints again at the convenience of doing more advanced analysis to remove parts of the program
+
+\begin{figure}
+\begin{minted}{haskell}
+printLine (w:ws)
+    | (length ws == 0) = "+" ++ line ++ "+"
+    | otherwise = "+" ++ line ++ printLine ws
+    where line = concat (replicate w "-")
+\end{minted}
+\caption{Exercise 2 - Recursive submission with multiple issues}
+\label{fig:ex2-reimplementation-map-guards}
+\end{figure}
+
+% \subsection{Redundant base case}
+
+% % Probably need a section about explicit and implicit preconditions
+% % All functions described in Assignment I take at least one list as a parameter. From those, all of them work on non-empty list
+
+% Since all functions in the assignment involve manipulating lists, pattern matching on the function parameters is common practice amont the students. Sometimes, this results in redundant pattern matching, as shown in Figure \ref{fig:ex1-redundant-base-case}.
+
+% Fortunately, removing redundant pattern matching is simple in such cases. Therefore we introduce a new transformation that removes the base case for \haskell{map} and \haskell{concatMap}.
+
+% Notice that this transformation has no effect at all in our dataset. This happens because base cases in this form are normalized away by the transformation described in Section \ref{sec:precondition-partial-solutions}. Still, we think it is general-purpose enough to have and expect it to be useful to exercises that do not rely on preconditions.
+
+% \begin{figure}
+% \begin{minted}{haskell}
+% parseTable [] = []
+% parseTable xs = map words xs
+% \end{minted}
+% \caption{Exercise 1 - Redundant base case}
+% \label{fig:ex1-redundant-base-case}
+% \end{figure}
+
+% \subsection{Foldr vs foldl}
+
+% Two semantically equivalent programs do not unify if one is defined in terms of \haskell{foldr} and the other in terms of \haskell{foldl}. The same applies to two programs where one uses \haskell{foldr} and the other uses \haskell{foldr} in combination with \haskell{map}. This is illustrated by the table below:
+
+% \begin{center}
+% \begin{tabular}{ m{12em} | m{16em} }
+% \haskell{foldr (+) 0} & \haskell{foldl (+) 0} \\
+% \hline
+% \haskell{foldr (+) 0 . map (* 2)} & \haskell{foldr (\x acc -> 2 * x + acc) 0}
+% \end{tabular}
+% \end{center}
+
+% Using \haskell{foldr} when simpler alternatives exist. Some instances solved by applying laws...
+
+% No solution
+
+\subsection{Desugaring}
+
+Some of the exercises require using list and string literals. Since the empty string can be expressed as \haskell{""} or \haskell{[]}, this results in different normal forms in otherwise equivalent programs. We also observe variations in the way singleton lists and strings are represented by students, which lead again to different normal forms.
+
+To resolve this issue, we specify a single normal form for list and string literals. We achieve this through the following transformations:
+
+\begin{center}
+\begin{tabular}{ m{10em} | m{10em} }
+    From & To \\
+    \hline
+    String literal & List of characters \\
+    \hline
+    List literal & Sequence of cons
 \end{tabular}
 \end{center}
 
-\section{Normalization issues}
+Besides the issue of list and string literals, we observe that some students use list comprehensions instead of higher-order functions. This again results in different normal forms in otherwise equivalent programs. To tackle this problem, we add a normalization step that desugars list comprehensions into list literals and higher-order functions. To this purpose, we use the algorithm described in Section 3.11 of the Haskell Report \cite{2010haskell}.
 
-Besides style issues, the student programs uncovered limitations in Ask-Elle's normalization procedure. These issues manifest in the form of unification failures.
+\subsection{List laws}
 
-The table below shows a group of general unification problems. Each row represents two programs that Ask-Elle fails to unify, even though they have the same semantics:
+In many cases, the differences between two semantically-equivalent normal forms can be resolved by a simple rewrite rule. Based on the student submissions, we identify a series of laws and implement them as rewrite rules in Ask-Elle's normalization procedure. They are summarized in Table \ref{tb:list-laws}.
 
-\begin{center}
+\begin{table}
+    \centering
+    \begin{tabular}{ m{13em} | m{13em} }
+    From & To \\
+    \hline
+    \haskell{xs ++ []} & \haskell{xs} \\
+    \hline
+    \haskell{map f . map g} & \haskell{map (f . g)} \\
+    \hline
+    \haskell{concatMap f . map g} & \haskell{concatMap (f . g)} \\
+    \hline
+    \haskell{concat (replicate x [e])} & \haskell{replicate x e} \\
+    \hline
+    \haskell{take n (cycle [e])} & \haskell{replicate x e} \\
+    \hline
+    \haskell{intercalate []} & \haskell{concat} \\
+    \hline
+    \haskell{foldr (++) []} & \haskell{concat} \\
+    \hline
+    \haskell{foldr (:)} & \haskell{flip (++)} \\
+    \hline
+    \haskell{concat . map} & \haskell{concatMap} \\
+    \hline
+    \haskell{map id} & \haskell{id} \\
+    \hline
+    \haskell{concatMap (flip (:) [])} & \haskell{id} \\
+    \hline
+    \haskell{(>>>)} & \haskell{flip (.)} \\
+    \hline
+    \haskell{(!! 0)} & \haskell{head} \\
+    \hline
+    \haskell{(xs ++ ys) ++ zs} & \haskell{xs ++ (ys ++ zs)} \\
+    \hline
+    \haskell{transpose . map (map f)} & \haskell{map (map f) . transpose}
+    \end{tabular}
+    \caption{List laws added to the normalization procedure}
+    \label{tb:list-laws}
+\end{table}
+
+Notice that the transformation involving \haskell{(>>>)} is possible because Ask-Elle restricts the operator to only work on functions. Any attempt to use it on different types results in a compile error.
+
+Besides these laws, we also identify slightly more complex ones that require reasoning at the scope level. We describe them below.
+
+\subsubsection{Simplify concatMap and mapMaybe}
+
+A pattern we observe in some student submissions is using \haskell{concatMap} when \haskell{map} would be sufficient. The same happens with the \haskell{mapMaybe} function. We add the transformations below to normalize both into \haskell{map}.
+
+\begin{figure}[H]
+\centering
 \begin{tabular}{ m{13em} | m{13em} }
-Any program & Same program, but with dead auxiliary functions added \\
+\haskell{concatMap (\x -> [e])} & \haskell{map (\x -> e)} \\
 \hline
-Any program & Same program, but with some code refactored to call auxiliary functions \\
-\hline
-Any program & Same program, but with some code refactored to call standard library functions \\
-\hline
-Any program that calls a commutative function F & Same program, passing the arguments to F in a different order
+\haskell{mapMaybe (\x -> Just e)} & \haskell{map (\x -> e)}
 \end{tabular}
-\end{center}
+\end{figure}
 
-Besides the issues mentioned above, we observed that some lambda expressions fail to unify with their eta reduced version.
+Notice that \haskell{e} can be any Haskell expression and that it may contain references to \haskell{x}.
 
-% Not really necessary to include this...
-% Besides the issues mentioned above, we observed that some programs failed to unify because they followed differing approaches when tackling the problem at hand. Different approaches to a problem that cannot be condensed into a simple case (see concatMap vs concatMap2 in Ex2 and 6323367 in Ex7)
+\subsubsection{Turn concatMap into filter}
 
-Additional to previous problems, we also discovered domain-specific ones. Interestingly, the domains overlap with the ones we identified when analyzing style issues, except for \haskell{Maybe}. We describe them below.
+Another pattern that caused problems with normalization is reimplementing \haskell{filter} in terms of \haskell{concatMap}. The transformation below solves the problem.
 
-\subsection{Lists}
+\begin{figure}[H]
+\centering
+\begin{tabular}{ m{10em} | m{10em} }
+\begin{minted}{haskell}
+concatMap (\x ->
+    if cond x
+        then [e]
+        else []
+    )
+\end{minted}
+& \haskell{filter cond}
+\end{tabular}
+\end{figure}
 
-The domain of lists shows the highest amount of unification problems. This is not surprising, as most of the code in the assignment manipulates lists. The table below shows pairs of programs that should unify but do not:
+Again, \haskell{e} can be any Haskell expression and it may contain references to \haskell{x}.
 
-\begin{center}
+\subsubsection{Split mapMaybe}
+
+After adding transformations that work on \haskell{map}, it pays off to extract \haskell{fmap} from inside \haskell{mapMaybe}. This way, the normalization procedure can apply more rules instead of getting stuck.
+
+\begin{figure}[H]
+\centering
 \begin{tabular}{ m{13em} | m{13em} }
-String literal & Same literal written as a list of characters \\
-\hline
-List literal & Same literal written using cons \\
-\hline
-List comprehension & Same list expressed in terms of higher-order functions \\
-\hline
-\haskell{xs} & \haskell{xs ++ []} or \haskell{[] ++ xs} \\
-\hline
-\haskell{[x] ++ xs} & \haskell{x : xs} \\
-\hline
-\haskell{(x : xs) ++ ys} & \haskell{x : (xs ++ ys)} \\
-\hline
-\haskell{(xs ++ ys) ++ zs} & \haskell{xs ++ (ys ++ zs)} \\
-\hline
-\haskell{map f (x : xs)} & \haskell{f x : map f xs} \\
-\hline
-\haskell{map f . map g} & \haskell{map (f . g)} \\
-\hline
-\haskell{concatMap f . map g} & \haskell{concatMap (f . g)} \\
-\hline
-\haskell{concat (x : xs)} & \haskell{x ++ concat xs} \\
-\hline
-\haskell{concat []} & \haskell{[]} \\
-\hline
-\haskell{transpose . map (map f)} & \haskell{map (map f) . transpose}
+    \haskell{mapMaybe (\x -> fmap f e)} & \haskell{map f . mapMaybe (\x -> e)}
 \end{tabular}
-\end{center}
+\end{figure}
 
-Besides the program pairs mentioned above, two semantically equivalent programs do not unify if one is defined in terms of \haskell{foldr} and the other in terms of \haskell{foldl}. The same applies to two programs where one uses \haskell{foldr} and the other uses \haskell{foldr} in combination with \haskell{map}. This is illustrated by the table below:
+Here, \haskell{e} can be any Haskell expression and it may contain references to \haskell{x}. Also, \haskell{f} can be any expression as long as it does not contain any references to \haskell{x}.
 
-\begin{center}
-\begin{tabular}{ m{12em} | m{16em} }
-\haskell{foldr (+) 0} & \haskell{foldl (+) 0} \\
-\hline
-\haskell{foldr (+) 0 . map (* 2)} & \haskell{foldr (\x acc -> 2 * x + acc) 0}
-\end{tabular}
-\end{center}
+\subsection{List indexing}
 
-\subsection{Booleans}
+A particularly problematic pattern we observe in a few student submissions is list indexing. While inoffensive on its own, list indexing becomes a normalization nightmare when used to write imperative-like code. Consider, for instance, the submission to Exercise 2 in Figure \ref{fig:ex2-list-indexing}. Even though the semantics are the same as a properly functional implementation (as in Figure \ref{fig:ex2-model-solutions}), the enormous syntactic differences make it very difficult for both to reach the same normal form.
 
-In contrast to lists, we observed less issues in the domain of booleans. The table below shows pairs of programs that we expect to unify but do not:
+In the particular example we are considering, we can see that the list comprehension is reimplementing \haskell{map}. While it would be possible to write a transformation that applies to this particular case, it seems too ad-hoc. Also, the submissions that would benefit from this are too few compared to the effort of implementing such a general-purpose transformation. Therefore we leave this problem as a candidate for future work.
 
-\begin{center}
-\begin{tabular}{ m{13em} | m{13em} }
-\haskell{if e then x else y} & \haskell{if not e then y else x} \\
-\hline
-Function using total guards & Same function using a top-level if statement \\
-\hline
-\haskell{not . elem} & \haskell{notElem} \\
-\hline
-\haskell{not . isJust} & \haskell{isNothing}
-\end{tabular}
-\end{center}
+% Future work / discussion
+
+\begin{figure}
+\centering
+\begin{minted}{haskell}
+printLine xs = "+" ++ intercalate "+" lines  ++ "+"
+    where
+       columns = length xs
+       lines = [replicate (xs !! index) '-'
+                | index <- [0..(columns-1)]]
+\end{minted}
+\caption{Exercise 2 - List indexing}
+\label{fig:ex2-list-indexing}
+\end{figure}
+
+\section{Booleans}
+
+% Some functions required by the assignment involve dealing with boolean values. We also found a series of issues on this domain:
+
+% \begin{itemize}
+%     \item Reimplementing functions: \haskell{and}, \haskell{all}, \haskell{not};
+%     \item Checking whether a boolean value is equal to true instead of using it directly (i.e. \haskell{x == True} instead of \haskell{x});
+%     \item Unnecessary if statement (i.e. \haskell{if cond then True else False} instead of \haskell{cond});
+%     \item Nested if statements that check for the same condition.
+% \end{itemize}
+
+% Abstract functions:
+
+% % * `(==) True` ==> `id` (true_id, destr_bool)
+% % * `(==) False` ==> `not` (false_neg, destr_bool)
+% % * `(&&) True` ==> `id` (and_id, destr_bool)
+% % * `foldr (&&) True` ==> `and` (foldr_and)
+% % * `and . map` ==> `all` (and_map, no auto)
+% % * `all id` ==> `and` (all_id, no auto)
+
+% \subsection{Stuff from norm}
+
+% In contrast to lists, we observed less issues in the domain of booleans. The table below shows pairs of programs that we expect to unify but do not:
+
+% \begin{center}
+% \begin{tabular}{ m{13em} | m{13em} }
+% \haskell{if not cond then y else x} & \haskell{if cond then x else y} \\
+% \hline
+% \haskell{if cond then True else False} & \haskell{cond} \\
+% \hline
+% Function using guards in the form \haskell{cond} and \haskell{not cond} & Same function using a top-level if statement
+% \end{tabular}
+% \end{center}
+
+% Let Ask-Elle reason about functions
+
+% \begin{center}
+% \begin{tabular}{ m{13em} | m{13em} }
+% \haskell{notElem} & \haskell{not . elem} \\
+% \hline
+% \haskell{isNothing} & \haskell{not . isJust}
+% \end{tabular}
+% \end{center}
 
 % Exercise 3: complexity of unifying arbitrary boolean expressions... A style matter to avoid unnecessary checks, a normalization matter to unify existing checks.
 
-\subsection{Patterns}
+\section{Maybe}
 
-The \haskell{case ... of} construct is widely used by students and by Ask-Elle itself in the normalization procedure. Given its flexibility, it is easy to write case expressions that differ syntactically but have similar semantics. A particular case that fails to unify arises when matching on tuples, as shown below:
+% Exercises 7 and 8 rely on the \haskell{Maybe} type to handle edge cases. Students are expected to use functions from the standard library to manipulate \haskell{Maybe} values, but many of them reimplemented them without realizing. We observed reimplementations of \haskell{fromMaybe}, \haskell{fromJust}, \haskell{isJust}, \haskell{isNothing} and \haskell{fmap}.
 
-\begin{center}
-\begin{tabular}{ m{15em} | m{14em} }
-    \begin{minted}{haskell}
-    case (a, b, c) of
-        ([], _, _) -> []
-        (x : xs, y, z) -> e
-    \end{minted}
-    &
-    \begin{minted}{haskell}
-    let y = b
-        z = c
-    in case a of
-        [] -> []
-        x : xs -> e
-    \end{minted}
-\end{tabular}
-\end{center}
+% Another style problem consists of using a combination of \haskell{isJust} and \haskell{fromJust}, instead of pattern matching, to extract the value from a \haskell{Maybe}. We also observed a disguised version of this pattern, where students use \haskell{fromMaybe} with a magic default value, which is later checked by an if statement. In case the output of \haskell{fromMaybe} turns out to be the magic value, then the original \haskell{Maybe} object was \haskell{Nothing}. Otherwise, it was \haskell{Just}. The code below illustrates the pattern:
 
-Since \haskell{b} and \haskell{c} are not being matched against a pattern, the programmer can choose to bind them inside the \haskell{case} or do so inside a \haskell{let}. In both cases, the meaning of the program is the same, but Ask-Elle is unable to unify them.
+% \begin{minted}{haskell}
+% let x = fromMaybe (-1) maybeX
+% in if x == (-1) then e else f x
+% \end{minted}
 
-% do we need to say something about laziness?
+% Beta-reduce \haskell{maybe}.
+
+% Apply laws:
+
+% \begin{center}
+% \begin{tabular}{ m{13em} | m{13em} }
+%     \haskell{Nothing == x} & \haskell{isNothing x} \\
+%     \hline
+%     \haskell{Nothing /= x} & \haskell{isJust x} \\
+%     \hline
+%     \haskell{maybeToList x == []} & \haskell{isNothing x} \\
+%     \hline
+%     \haskell{maybeToList x /= []} & \haskell{isJust x} \\
+%     \hline
+%     \haskell{maybeToList x !! 0} & \haskell{fromJust x} % Interesting... How does this interact with head unfolding? There is a race here. If unfolding is applied first, will this still work?
+% \end{tabular}
+% \end{center}
+
+% \subsection{Abstract}
+
+% Case expression to \haskell{fromMaybe}
+
+% Case expression to \haskell{fmap}
+
+% Note: looks like maybe is an area where advanced analysis would yield interesting results (non-syntactic)... We only dealt with function reimplementation...
+
+\section{Patterns}
+
+% \subsection{Simplification}
+
+% Remove nested as patterns, rename invalidated bindings
+
+% Remove wildcard patterns bound to a name
+
+% \subsection{Unfold functions}
+
+% Unfold functions that result in pattern matching
+
+% \begin{center}
+%     \begin{tabular}{ m{13em} | m{13em} }
+%     \haskell{head xs} & \haskell{let (x : _) = xs in x} \\
+%     \hline
+%     \haskell{tail xs} & \haskell{let (_ : ys) = xs in ys} \\
+%     \hline
+%     \haskell{fst x} & \haskell{let (a, _) = x in a} \\
+%     \hline
+%     \haskell{snd x} & \haskell{let (_, b) = x in b} \\
+%     \hline
+%     \haskell{fromJust m} & \haskell{let (Just x) = m in x}
+%     \end{tabular}
+% \end{center}
+
+% \subsection{Nested patterns}
+% \label{sec:patterns-nested}
+
+% % Note: I think this currently only works for case, but it could be trivially generalized to work on let as well. Therefore we leave it as is.
+
+% Some students programs use nested pattern matching in cases where it is unnecessary. The table below shows an example of this, where the program to the left uses nested pattern matching and the one to the right does not.
+
+% \begin{center}
+% \begin{tabular}{ m{17em} | m{13em} }
+%     \begin{minted}{haskell}
+%     case a of
+%         [] -> []
+%         xs -> let (x : _) = xs
+%               in e
+%     \end{minted}
+%     &
+%     \begin{minted}{haskell}
+%     case a of
+%         [] -> []
+%         x : xs -> e
+%     \end{minted}
+% \end{tabular}
+% \end{center}
+
+% Solution: pattern lifting
+
+% Conservative vs. agressive
+
+% \subsection{Tuple de-reconstruction}
+
+% On the domain of pattern matching, we observed that some students deconstructed and reconstructed tuples instead of using the original tuple directly. This resulted in code like \haskell{let (a, b) = x in f (a, b)}, when \haskell{f x} would have been sufficient.
+
+% \subsection{Case heuristics}
+
+% \subsubsection{Single alternative}
+
+% Show motivation
+
+% Rewrite as let
+
+% \subsubsection{Undefined last alternative}
+
+% Show motivation
+
+% Remove
+
+% \subsubsection{Unreachable alternatives}
+
+% Show motivation
+
+% Remove
+
+% \subsubsection{Unnecessary tuple matching}
+
+% The \haskell{case ... of} construct is widely used by students and by Ask-Elle itself in the normalization procedure. Given its flexibility, it is easy to write case expressions that differ syntactically but have similar semantics. A particular case that fails to unify arises when matching on tuples, as shown below:
+
+% \begin{center}
+% \begin{tabular}{ m{15em} | m{14em} }
+%     \begin{minted}{haskell}
+%     case (a, b, c) of
+%         ([], _, _) -> []
+%         (x : xs, y, z) -> e
+%     \end{minted}
+%     &
+%     \begin{minted}{haskell}
+%     let y = b
+%         z = c
+%     in case a of
+%         [] -> []
+%         x : xs -> e
+%     \end{minted}
+% \end{tabular}
+% \end{center}
+
+% Since \haskell{b} and \haskell{c} are not being matched against a pattern, the programmer can choose to bind them inside the \haskell{case} or do so inside a \haskell{let}. In both cases, the meaning of the program is the same, but Ask-Elle is unable to unify them.
+
+% % do we need to say something about laziness?
+
+\section{Miscellaneous}
+
+Beta reduction: id, const, ++, map, concat, foldr
+
+Abstract: id
+
+Inlining, dead code removal, sort arguments in commutative functions
+
+Limitations to eta reduction
+
+Everything about flip
+
+% \subsection{Flip}
+
+% Insert flip if it allows to eta reduce
+% Apply flip if all arguments provided
+% Remove flip on commutative functions
+% Reorder parameters of a lambda when flip is applied to it
+
+% Not really necessary to include this...
+% Besides the issues mentioned above, we observed that some programs failed to unify because they followed differing approaches when tackling the problem at hand. Different approaches to a problem that cannot be condensed into a simple case (see concatMap vs concatMap2 in Ex2 and 6323367 in Ex7)

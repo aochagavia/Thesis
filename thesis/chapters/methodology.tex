@@ -3,17 +3,17 @@
 In Section \ref{sec:research-questions}, we set out to find the cases in which Ask-Elle's normalization does not work as expected. Based on this knowledge, we aim to improve the normalization procedure so it can handle a wider range of programs. We tackle the problem by iterating through the following steps:
 
 \begin{enumerate}
-    \item Measure the effectiveness\footnote{See Section \ref{sec:method-measure} for a definition of \emph{effectiveness}.} of Ask-Elle's normalization, relative to a set of student programs;
+    \item Measure the effectiveness\footnote{See Section \ref{sec:method-measurement-definitions} for a definition of \emph{effectiveness}.} of Ask-Elle's normalization, relative to a set of student programs;
     \item Analyze the set of student programs to reveal normalization shortcomings;
     \item Enhance Ask-Elle's normalization to resolve the discovered shortcomings.
 \end{enumerate}
 
-The analysis phase attempts to answer our first research question, while the enhance phase tackles the second one. The measurement step provides a point of reference.
+The analysis phase attempts to answer our first research question, while the enhancement phase tackles the second one. The measurement step provides a point of reference.
 
 \section{Measure}
 \label{sec:method-measure}
 
-To quantify the initial state of Ask-Elle's normalization and our improvements, we define a series of measurements and rely on a particular dataset. We discuss both below.
+To quantify the initial state of Ask-Elle's normalization and our improvements, we define a series of measurements to be taken on a particular dataset.
 
 \subsection{Dataset}
 
@@ -57,6 +57,7 @@ Correctness of the answers was verified through a test suite, which turned out t
 \end{table}
 
 \subsection{Measurements}
+\label{sec:method-measurement-definitions}
 
 Measurements are done on a per-exercise basis. As a first step, we classify the student submissions into clusters. A \emph{cluster} is \emph{a set of programs that share the same normal form, under a given normalization procedure}. This means that the programs in a cluster are seen as semantically-equivalent by Ask-Elle.
 
@@ -112,9 +113,9 @@ parseTable =
 \label{fig:method-comparing-clusters}
 \end{figure}
 
-We can see that both normal forms have the same semantics but are still syntactically different. In this case, it seems reasonable to think of a semantics-preserving tranformation that transforms the right-hand side of Cluster B into \haskell{map words}. Figuring out which exact transformation we need is the role of the \emph{enhance} step, explained in the next section.
+We can see that both normal forms have the same semantics but are still syntactically different. In this case, it seems reasonable to think of a semantics-preserving tranformation that turns the right-hand side of Cluster B into \haskell{map words}. Figuring out which exact transformation we need is the role of the \emph{enhance} step, explained in the next section.
 
-% FIXME: talk about the higher-level problem of students writing xs, instead of currying
+While the normalization problem identified in the previous example is fairly low-level, we identify higher-level problems too. For instance, Section \ref{sec:analysis-preconditions} explains the interaction between function preconditions and normalization.
 
 \section{Enhance}
 \label{sec:method-enhance}
@@ -125,11 +126,11 @@ The enhance step bridges the gap between discovering shortcomings and improving 
 
 Let us consider the normal forms from Figure \ref{fig:method-comparing-clusters}. We could say that Cluster B is stuck somewhere in the normalization process, instead of arriving at \haskell{map words} as we would expect.
 
-Ask-Elle has an $\eta$-reduction transformation, which could simplify \mintinline{haskell}{\x1 -> map words x1} to \haskell{map words}. However, it fails to work in the case of Cluster B because there is a \haskell{case} expression.
+Ask-Elle has an eta-reduction transformation, which could simplify \mintinline{haskell}{\x1 -> map words x1} to \haskell{map words}. However, it fails to work in the case of Cluster B because there is a \haskell{case} expression.
 
-% FIXME: mention let inlining, since we are using it bellow
+Ask-Elle also has an inlining transformation, which replaces a variable usage by its definition. In the case of Cluster B, it seems sensible that \haskell{x2} could be replaced by \haskell{x1}, thereby getting rid of the \haskell{case}. However, given that \haskell{case} is a very expressive Haskell construct, the inlining transformation does not support it. Instead, it only supports \haskell{let} bindings.
 
-One possible solution is to add a normalization step that, for any \haskell{case} expression consisting of a single alternative, rewrites it in terms of \haskell{let}. In the case of Cluster B, this transformation will allow the inliner to simplify the code further in a later pass, which in turn will open the doors to $\eta$-reduction.
+One possible solution is to add a normalization step that, for any \haskell{case} expression consisting of a single alternative, rewrites it in terms of \haskell{let}. In the case of Cluster B, this transformation would allow the inliner to simplify the code further in a later pass, which opens the door to eta reduction.
 
 \begin{figure}[H]
 \centering
@@ -160,10 +161,12 @@ To increase our confidence in the soundness of the new transformations, we resor
 
 Throughout our research, we added around 75 transformations to Ask-Elle. Formalizing and proving that all of them are semantics-preserving would be a research project of its own. Still, we formalized and proved the soundness property for 39 of them in Coq.
 
-When choosing which transformations to prove we discarded trivial ones (i.e. specialized cases of $\beta$-reduction and rewrite rules that are true by definition) and others that were too complex (e.g. anything involving scoped variables, like inlining or dead code removal). Instead, we focused on transformations that can be expressed as rewrite rules.
+When choosing which transformations to prove we discarded trivial ones (i.e. specialized cases of beta-reduction and rewrite rules that are true by definition) and others that were too complex (e.g. anything involving scoped variables, like inlining or dead code removal). Instead, we focused on transformations that can be expressed as rewrite rules in Coq's type system.
 
-As an example, consider an hypothetical cluster of programs in Exercise 1 that has the following normal form:
+As an example, consider a hypothetical cluster of programs in Exercise 1 that has the following normal form:
 
+\begin{figure}[H]
+\centering
 \begin{minted}{haskell}
 parseTable =
     (\xs -> case xs of
@@ -171,9 +174,14 @@ parseTable =
         ys -> map words ys
     )
 \end{minted}
+\caption{Useless case matching before calling map.}
+\label{fig:method-bad-style-map}
+\end{figure}
 
-We can prove that removing the match on the empty list is semantics-preserving, as shown in the \emph{empty\_base\_case} theorem:
+We can prove that removing the \haskell{case} expression is semantics-preserving, as shown in the \emph{empty\_base\_case} theorem:
 
+\begin{figure}[H]
+\centering
 \begin{minted}{coq}
 Definition bad_style_map
                 {T U} (f : T -> U) (xs : list T)
@@ -187,10 +195,10 @@ Theorem empty_base_case : forall {T U} (f : T -> U) xs,
     bad_style_map f xs = map f xs.
 Proof. intros. destruct xs. auto. auto. Qed.
 \end{minted}
+\caption{Proving the soundness of a transformation.}
+\end{figure}
 
-The proof is surprisingly simple, as is the case for most of the proofs we wrote. We distinguish two possible cases: \emph{xs} is empty or it is not. In both cases, applying $\beta$-reduction results in an equality that is true by reflexivity.
-
-Such simplicity hints at the possibility of using an automated theorem prover to unify full programs. For a more detailed discussion see Chapter \ref{sec:discussion}.
+The proof says that calling \haskell{map} inside a \haskell{case}, as in Figure \ref{fig:method-bad-style-map}, has the same semantics as calling it directly. The proof is surprisingly simple, as is the case for most of the proofs we wrote. We distinguish two possible cases: \haskell{xs} is empty or it is not. In both cases, applying beta-reduction results in an equality that is true by reflexivity.
 
 \subsubsection{Property-based testing}
 \label{sec:method-testing}
