@@ -426,49 +426,108 @@ printLine xs = "+" ++ intercalate "+" lines  ++ "+"
 
 \section{Booleans}
 
-% Some functions required by the assignment involve dealing with boolean values. We also found a series of issues on this domain:
+Given the crucial role of booleans in the control flow of a program, normalization problems on this domain have a far reaching effect. While there are less issues compared to lists, we still identify and address many of them.
 
-% \begin{itemize}
-%     \item Reimplementing functions: \haskell{and}, \haskell{all}, \haskell{not};
-%     \item Checking whether a boolean value is equal to true instead of using it directly (i.e. \haskell{x == True} instead of \haskell{x});
-%     \item Unnecessary if statement (i.e. \haskell{if cond then True else False} instead of \haskell{cond});
-%     \item Nested if statements that check for the same condition.
-% \end{itemize}
+\subsection{Guard rewriting}
 
-% Abstract functions:
+One of Ask-Elle's normalization steps rewrites guards as \haskell{if} expressions. This is only possible if the guards are total, as illustrated by Figure \ref{fig:ex3-total-guards}.
 
-% % * `(==) True` ==> `id` (true_id, destr_bool)
-% % * `(==) False` ==> `not` (false_neg, destr_bool)
-% % * `(&&) True` ==> `id` (and_id, destr_bool)
-% % * `foldr (&&) True` ==> `and` (foldr_and)
-% % * `and . map` ==> `all` (and_map, no auto)
-% % * `all id` ==> `and` (all_id, no auto)
+\begin{figure}
+\centering
+\emph{Before}
+\begin{minted}{haskell}
+printField n s
+    | all isDigit s = padding ++ s
+    | otherwise     = s ++ padding
+    where padding = replicate (n - length s) ' '
+\end{minted}
+\smallskip
+\emph{After}
+\begin{minted}{haskell}
+printField n s = if all isDigit s then padding ++ s
+                                  else s ++ padding
+    where padding = replicate (n - length s) ' '
+\end{minted}
+\caption{Total guards are rewritten as a top-level \haskell{if}}
+\label{fig:ex3-total-guards}
+\end{figure}
 
-% \subsection{Stuff from norm}
+Ask-Elle knows that guards are total if the last one is \haskell{True} or \haskell{otherwise}. While this heuristic works well in many cases, it fails when a program uses total guards expressed in terms of a condition and its negation (see Figure \ref{fig:ex3-total-guards-not}). For this reason, we enhance Ask-Elle's guard rewriting to support this new way of expressing total guards.
 
-% In contrast to lists, we observed less issues in the domain of booleans. The table below shows pairs of programs that we expect to unify but do not:
+\begin{figure}
+\begin{minted}{haskell}
+printField n s
+    | all isDigit s       = padding ++ s
+    | not (all isDigit s) = s ++ padding
+    where padding = replicate (n - length s) ' '
+\end{minted}
+\caption{Total guards using \haskell{not}}
+\label{fig:ex3-total-guards-not}
+\end{figure}
 
-% \begin{center}
-% \begin{tabular}{ m{13em} | m{13em} }
-% \haskell{if not cond then y else x} & \haskell{if cond then x else y} \\
-% \hline
-% \haskell{if cond then True else False} & \haskell{cond} \\
-% \hline
-% Function using guards in the form \haskell{cond} and \haskell{not cond} & Same function using a top-level if statement
-% \end{tabular}
-% \end{center}
+\subsection{Boolean laws}
 
-% Let Ask-Elle reason about functions
+Similar to lists, there are many cases in which the differences between two semantically-equivalent normal forms can be resolved by a simple rewrite rule. Table \ref{tb:boolean-laws} summarizes the laws we implement as rewrite rules in Ask-Elle's normalization procedure.
 
-% \begin{center}
-% \begin{tabular}{ m{13em} | m{13em} }
-% \haskell{notElem} & \haskell{not . elem} \\
-% \hline
-% \haskell{isNothing} & \haskell{not . isJust}
-% \end{tabular}
-% \end{center}
+\begin{table}
+    \centering
+    \begin{tabular}{ m{15em} | m{11em} }
+    From & To \\
+    \hline
+    \haskell{(==) True} & \haskell{id} \\
+    \hline
+    \haskell{(&&) True} & \haskell{id} \\
+    \hline
+    \haskell{(==) False} & \haskell{not} \\
+    \hline
+    \haskell{foldr (&&) True} & \haskell{and} \\
+    \hline
+    \haskell{all id} & \haskell{and} \\
+    \hline
+    \haskell{and . map f} & \haskell{all f} \\
+    \hline
+    \haskell{if cond then True else False} & \haskell{cond} \\
+    \hline
+    \haskell{if not cond then y else x} & \haskell{if cond then x else y}
+    \end{tabular}
+    \caption{Boolean laws added to the normalization procedure}
+    \label{tb:boolean-laws}
+\end{table}
 
-% Exercise 3: complexity of unifying arbitrary boolean expressions... A style matter to avoid unnecessary checks, a normalization matter to unify existing checks.
+\subsection{Function negation}
+
+Some Haskell functions are equivalent to the negation of other functions. For instance, \haskell{isNothing} is equivalent to \haskell{not . isJust}. This is important knowledge, as some of the transformations described above operate on expressions that involve the \haskell{not} function. From this perspective, expressing a function in terms of \haskell{not} increases the chances that a program can be normalized further. Table \ref{tb:booleans-fn-negation} shows new rewriting transformations directed towards this goal.
+
+\begin{table}
+\centering
+\begin{tabular}{ m{13em} | m{13em} }
+From & To \\
+\hline
+\haskell{notElem} & \haskell{not . elem} \\
+\hline
+\haskell{isNothing} & \haskell{not . isJust}
+\end{tabular}
+\caption{Function negation}
+\label{tb:booleans-fn-negation}
+\end{table}
+
+As an example of how this helps drive normalization further, consider Figure \ref{fig:boolean-negation-example}. The original program, based on \haskell{isNothing}, ends up in the same normal form as a similar program based on \haskell{isJust}.
+
+\begin{figure}
+\begin{tabular}{ m{16em} m{10em} }
+\haskell{if isNothing x then y else z} & \emph{rewrite in terms of \texttt{not}} \\
+%\hline
+\haskell{if not (isJust x) then y else z} & \emph{switch \texttt{if} branches} \\
+%\hline
+\haskell{if isJust x then z else y} &
+\end{tabular}
+\caption{Interaction between function negation and boolean laws}
+\label{fig:boolean-negation-example}
+\end{figure}
+
+% \subsection{Nested if statements}
+
+% Nested if statements that check for the same condition.
 
 \section{Maybe}
 
