@@ -1,22 +1,12 @@
 \chapter{Analysis results and new transformations}
 \label{sec:analysis-results}
 
-
-
-% Q: In which cases does normalization not work as expected?
-
-% High-level: preconditions, lists, maybe, booleans, patterns, misc
-
-% FIXME: intro
-
-% OLD:
-
-We observed multiple issues that cause problems to normalization. Many students struggle with the concept of preconditions, which has a negative effect on normalization. We identify several domain-specific issues as well, involving lists, booleans, the \haskell{Maybe} type and patterns. When possible, we add new transformations to alleviate those issues.
+We observe multiple issues that cause problems to normalization. First of all, many students struggle with the concept of preconditions. Additionally, we identify several domain-specific issues involving lists, booleans, the \haskell{Maybe} type and patterns. When possible, we add new transformations to alleviate those issues.
 
 \section{Preconditions}
 \label{sec:analysis-preconditions}
 
-Throughout the assignment, some functions are provided of preconditions to simplify their implementation. For instance, knowing that a list will never be empty means that the student no longer has to write additional code to handle that case. Contrary to the expectations, preconditions caused confusion among students, instead of leading to simpler code. Below we explain how this came to be and the consequences for Ask-Elle. %Below we consider the case of Exercise 3 to illustrate the problem.
+Throughout the assignment, some functions are provided of preconditions to simplify their implementation. For instance, knowing that a list will never be empty means that the student no longer has to write additional code to handle that case. Contrary to the expectations, preconditions caused confusion among students, instead of leading to simpler code.
 
 \subsection{Explicit and implicit preconditions}
 
@@ -34,7 +24,7 @@ printField n s
 \label{fig:ex3-model-solution}
 \end{figure}
 
-Besides Exercise 3, no other exercise in the assignment mentions properties or preconditions explicitly. However, it is possible to deduce many preconditions from the context. Table \ref{tb:preconditions-implicit} presents a summary of them.
+Besides Exercise 3, no other exercise in the assignment mentions properties or preconditions explicitly. However, it is possible to deduce many preconditions from the context. Table \ref{tb:preconditions-implicit} presents a summary.
 
 \begin{table}
 \centering
@@ -64,7 +54,7 @@ Exercise & Precondition \\
 
 Preconditions allow functions with different semantics to be considered correct. In case the precondition does not hold, the program is allowed to do anything. Therefore, it is possible to have two programs that behave in the same way when the precondition holds, but do different things when it does not hold.
 
-Notice that writing a submission to an exercise always involves specifying what to do when the precondition does not hold, even when there is no explicit checking for the precondition. Consider the solution to Exercise 3 that we present in Figure \ref{fig:ex3-model-solution}. If $n < length\ s$, then $n - length\ s < 0$, then \haskell{replicate (n - length s) ' ' = []}. Therefore, this particular implementation of \haskell{printField} will return \haskell{s} whenever the precondition does not hold.
+Notice that writing a submission to an exercise always involves specifying what to do when the precondition does not hold, even when there is no explicit checking for the precondition. Consider the solution to Exercise 3 that we present in Figure \ref{fig:ex3-model-solution}. If \haskell{n < length s}, then \haskell{n - length s < 0}, then \haskell{replicate (n - length s) ' ' = []}. Therefore, this particular implementation of \haskell{printField} will return \haskell{s} whenever the precondition does not hold.
 
 % The relationship between preconditions and semantics has implications...
 
@@ -74,7 +64,7 @@ Many students add explicit checks to handle the case in which the precondition d
 
 \subsubsection{Differing semantics}
 
-Figure \ref{fig:analysis-precondition-example} shows a submission to Exercise 3 where the student adds a guard checking for $n < length\ s$. On the right-hand side of the guard, we observe that the student truncates the string.
+Figure \ref{fig:analysis-precondition-example} shows a submission to Exercise 3 where the student adds a guard checking for \haskell{n < length s}. On the right-hand side of the guard, we observe that the student truncates the string.
 
 Comparing this implementation to the model solution in Figure \ref{fig:ex3-model-solution}, we can see that the semantics have changed. The model solution returns \haskell{s} when the precondition does not hold, while this implementation returns \haskell{take n s}.
 
@@ -293,7 +283,7 @@ printLine (w:ws)
 
 \subsection{Desugaring}
 
-Some of the exercises require using list and string literals. Since the empty string can be expressed as \haskell{""} or \haskell{[]}, this results in different normal forms in otherwise equivalent programs. We also observe variations in the way singleton lists and strings are represented by students, which lead again to different normal forms.
+Some of the exercises involve using list and string literals. Since the empty string can be expressed as \haskell{""} or \haskell{[]}, this results in different normal forms in otherwise equivalent programs. We also observe variations in the way singleton lists and strings are represented by students, which lead again to different normal forms.
 
 To resolve this issue, we specify a single normal form for list and string literals. We achieve this through the following transformations:
 
@@ -354,26 +344,29 @@ Besides these laws, we also identify slightly more complex ones that require rea
 
 \subsubsection{Simplify concatMap and mapMaybe}
 
-A pattern we observe in some student submissions is using \haskell{concatMap} when \haskell{map} would be sufficient. The same happens with the \haskell{mapMaybe} function. We add the transformations below to normalize both into \haskell{map}.
+A pattern we observe in some student submissions is using \haskell{concatMap} when \haskell{map} would be sufficient. The same happens with the \haskell{mapMaybe} function. We add the transformations from Table \ref{tb:lists-simplifying-concatmap} to normalize both into \haskell{map}. Notice that \haskell{e} can be any Haskell expression and that it may contain references to \haskell{x}.
 
-\begin{figure}[H]
+\begin{table}
 \centering
-\begin{tabular}{ m{13em} | m{13em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{13em} | >{\centering\arraybackslash}m{13em} }
+From & To \\
+\hline
 \haskell{concatMap (\x -> [e])} & \haskell{map (\x -> e)} \\
 \hline
 \haskell{mapMaybe (\x -> Just e)} & \haskell{map (\x -> e)}
 \end{tabular}
-\end{figure}
-
-Notice that \haskell{e} can be any Haskell expression and that it may contain references to \haskell{x}.
+\caption{Simplifying \haskell{concatMap} and \haskell{mapMaybe}}
+\label{tb:lists-simplifying-concatmap}
+\end{table}
 
 \subsubsection{Turn concatMap into filter}
 
-Another pattern that caused problems with normalization is reimplementing \haskell{filter} in terms of \haskell{concatMap}. The transformation below solves the problem.
+Another pattern that caused problems with normalization is reimplementing \haskell{filter} in terms of \haskell{concatMap}. The transformation in Figure \ref{fig:lists-rewrite-concatmap-as-filter} solves the problem. Again, \haskell{e} can be any Haskell expression and it may contain references to \haskell{x}.
 
-\begin{figure}[H]
+\begin{figure}
 \centering
-\begin{tabular}{ m{10em} | m{10em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{10em} >{\centering\arraybackslash}m{10em} }
+From & To \\
 \begin{minted}{haskell}
 concatMap (\x ->
     if cond x
@@ -383,9 +376,9 @@ concatMap (\x ->
 \end{minted}
 & \haskell{filter cond}
 \end{tabular}
+\caption{Turn \haskell{concatMap} into \haskell{filter}}
+\label{fig:lists-rewrite-concatmap-as-filter}
 \end{figure}
-
-Again, \haskell{e} can be any Haskell expression and it may contain references to \haskell{x}.
 
 % \subsubsection{Split mapMaybe}
 
@@ -532,11 +525,11 @@ As an example of how this helps drive normalization further, consider Figure \re
 
 \section{Maybe}
 
-Exercises 7 and 8 rely on the \haskell{Maybe} type to handle edge cases. Students are expected to use functions from the standard library to manipulate \haskell{Maybe} values. This resulted in multiple issues.
+Exercises 7 and 8 rely on the \haskell{Maybe} type to handle edge cases. Students are expected to use functions from the standard library to manipulate \haskell{Maybe} values. This offers room for multiple issues.
 
 \subsection{Function abstraction through rewrite rules}
 
-In the domain of \haskell{Maybe}, one of the main problems in the normalization procedure is caused by function reimplementation. Many students write their own version of \haskell{fromMaybe}, \haskell{fromJust}, \haskell{isJust}, \haskell{isNothing} and \haskell{fmap}.
+One of the main problems we observe is caused by function reimplementation. Many students write their own version of \haskell{fromMaybe}, \haskell{fromJust}, \haskell{isJust}, \haskell{isNothing} and \haskell{fmap}.
 
 In most cases, functions can be abstracted through a simple rewrite rule, as illustrated by Table \ref{tb:maybe-laws}. We implement this in a similar way to list and boolean laws (tables \ref{tb:list-laws} and \ref{tb:list-laws} respectively).
 
@@ -596,13 +589,13 @@ case m of
 
 \subsection{Unfolding the maybe function}
 
-Some student submissions use the \haskell{maybe} function instead of \haskell{case} when manipulating \haskell{Maybe} values. While abstracting \haskell{maybe} from \haskell{case} expressions is possible, unfolding \haskell{maybe} yields less clusters when normalizing. Therefore we add an unfolding transformation to Ask-Elle's normalization, according to the definition of the function in \ref{fig:maybe-definition}.
+Some student submissions use the \haskell{maybe} function instead of \haskell{case} when manipulating \haskell{Maybe} values. While abstracting \haskell{maybe} from \haskell{case} expressions is possible, unfolding \haskell{maybe} yields even less clusters when normalizing. Therefore we add an unfolding transformation to Ask-Elle's normalization, according to the definition of the function in \ref{fig:maybe-definition}.
 
 % Is this a hint of a deeper principle? Unfold as long as there are no laws, abstract if you want to apply laws?
 
 \begin{figure}
 \centering
-\begin{minted}{haskell}
+\begin{minted}[xleftmargin=0.3\textwidth]{haskell}
 maybe d f m = case m of
     Nothing -> d
     Just x -> f x
@@ -617,7 +610,7 @@ Another normalization problem is caused by the combination of \haskell{isJust} a
 
 \begin{figure}
 \centering
-\begin{tabular}{ m{13em} | m{13em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{13em} >{\centering\arraybackslash}m{13em} }
 isJust / fromJust & Idiomatic alternative \\
 \begin{minted}{haskell}
 if isJust m
@@ -696,7 +689,9 @@ Another source of syntactic differences are functions that use pattern matching 
 \subsection{Nested patterns and pattern lifting}
 % \label{sec:patterns-nested}
 
-Nested pattern matching is another source of syntactic differences that cause normalization problems. Sometimes it originates from student submissions and in other cases it is produced by other normalization steps (e.g. the unfolding transformation mentioned in Section \ref{sec:patterns-unfolding}). Ideally, we would like to collapse nested pattern matches into one, which then becomes the normal form. Figure \ref{fig:patterns-nested-matching} shows an example of this, where the program to the left uses nested pattern matching and the one to the right does not. Notice, by the way, how the pattern matching on the left corresponds to an unfolded version of \haskell{head}.
+Nested pattern matching is another source of syntactic differences that cause normalization problems. Sometimes it originates from student submissions and in other cases it is produced by other normalization steps (e.g. the unfolding transformation mentioned in Section \ref{sec:patterns-unfolding}).
+
+Ideally, we would like to collapse nested pattern matches into one, which then becomes the normal form. Figure \ref{fig:patterns-nested-matching} shows an example of this, where the program to the left uses nested pattern matching and the one to the right does not. Notice, by the way, how the pattern matching on the left corresponds to an unfolded version of \haskell{head}.
 
 \begin{figure}
 \centering
@@ -719,13 +714,11 @@ Nested pattern matching is another source of syntactic differences that cause no
 \label{fig:patterns-nested-matching}
 \end{figure}
 
-\subsubsection{Pattern lifting}
+\subsubsection{Introducing pattern lifting}
 
 Our proposed solution to the problem of nested pattern matching is \emph{pattern lifting}. This mechanism detects pattern matches on a variable that has been bound in a previous match. Then, it lifts the nested binding and merges it with the pattern it comes from.
 
 Consider again Figure \ref{fig:patterns-nested-matching} as an example. We can see that \haskell{xs} is bound in the second alternative of the \haskell{case} and that \haskell{y} is bound by matching on \haskell{xs}. This means we can lift the pattern where \haskell{y} is bound, thereby merging the \haskell{xs} and \haskell{(y : _)} patterns into one. As you can see on the right of the figure, the resulting pattern is \haskell{xs@(y : _)}.
-
-% % do we need to say something about laziness?
 
 \subsubsection{Conservative and aggressive variants}
 
@@ -738,13 +731,13 @@ Before & After \\
 \begin{minted}{haskell}
 let xs = e
 in if xs == []
-    then let (x:_) = xs in x
+    then let (y:_) = xs in y
     else 42
 \end{minted}
 & \begin{minted}{haskell}
-let xs@(x:_) = e
+let xs@(y:_) = e
 in if xs == []
-    then x
+    then y
     else 42
 \end{minted}
 \end{tabular}
@@ -754,61 +747,160 @@ in if xs == []
 
 To prevent this problem, we define a conservative version of pattern lifting, which only supports irrefutable patterns. Irrefutable patterns are patterns that always match, like variables and wildcards. Also tuples containing other irrefutable patterns are themselves irrefutable. The same is valid for \emph{as} patterns. With this constraint, pattern lifting is always semantics-preserving.
 
-FIXME: add comparison between conservative and aggressive.
+As expected, conservative pattern lifting results in a less effective normalization in comparison to aggressive pattern lifting. Table \ref{tb:patterns-lifting-effectiveness} shows the difference in the amounts of clusters depending on the pattern lifting mode used. Exercises where there is no difference are ignored.
+
+\begin{table}
+\centering
+\begin{tabular}{ m{6em} | m{6em} | m{6em} }
+Exercise & Conservative & Aggressive \\
+\hline
+1 & 3 & 2 \\
+\hline
+4 & 13 & 12 \\
+\hline
+6 & 17 & 16 \\
+\hline
+7 & 30 & 28 \\
+\hline
+8 & 20 & 18
+\end{tabular}
+\caption{Effectiveness of pattern lifting}
+\label{tb:patterns-lifting-effectiveness}
+\end{table}
+
+\subsubsection{Defending aggressive pattern lifting}
+
+As mentioned above, aggressive pattern lifting is unsound. This means that it may change the meaning of a program, forcing a pattern match earlier than specified in the original code.
+
+In the context of normalization, this unsoundness means that an incorrect program could have the same normal form as a correct one. Allowing unsound transformations could lead Ask-Elle to say that two programs are equivalent, when in fact they are not. This is the case illustrated by Figure \ref{fig:pattern-lifting-unsound}.
+
+We think, however, that an incorrect program with the necessary characteristics is very unlikely to pass a basic test suite. Such a program would need to pattern match too early on a value, leading to an easy to detect crash. In light of this, we treat aggressive pattern lifting as a sound transformation in practice, even though it is technically unsound.
+
+% In fact, our test suite did not find any single program that would have caused problems to pattern lifting.
 
 \subsection{Tuple deconstruction and reconstruction}
 
-% Note: this can only be done for irrefutable patterns!
+We oberve another normalization issue where students deconstruct and reconstruct a tuple instead of matching on its expression. This results in code like \haskell{let (a, b) = e in f (a, b)}, when \haskell{f e} would have been sufficient. We add a transformation to remove pattern matching in such a case.
 
-% On the domain of pattern matching, we observed that some students deconstructed and reconstructed patterns instead of matching on a name. This resulted in code like \haskell{let (a, b) = x in f (a, b)}, when \haskell{f x} would have been sufficient.
+\subsection{Tuple unrolling}
 
-Generalizable as let
+Ask-Elle's normalization inlines bindings to names, not to patterns. A consequence of this is that it will fail to inline names that are bound inside a tuple pattern. Below we consider the problem from the perspectives of \haskell{let} and \haskell{case}, and we present a new transformation to solve it.
 
-\subsection{Unnecessary tuple matching}
+\subsubsection{Let}
 
-The \haskell{case ... of} construct is widely used by students and by Ask-Elle itself in the normalization procedure. Given its flexibility, it is easy to write case expressions that differ syntactically but have similar semantics. A particular case that fails to unify arises when matching on tuples, as shown below:
+In the case of \haskell{let}, Figure \ref{fig:patterns-tuple-unrolling-let} shows on the left a group of variables being bound inside a tuple pattern. On the right is an equivalent version, where the tuple has been unrolled into separate bindings, one for each variable. We enhance Ask-Elle with a normalization step that performs this transformation.
 
-\begin{center}
-\begin{tabular}{ m{15em} | m{14em} }
-    \begin{minted}{haskell}
-    case (a, b, c) of
-        ([], _, _) -> []
-        (x : xs, y, z) -> e
-    \end{minted}
-    &
-    \begin{minted}{haskell}
-    let y = b
-        z = c
-    in case a of
-        [] -> []
-        x : xs -> e
-    \end{minted}
+% Note that, in the figure, \haskell{a}, \haskell{b} and \haskell{c} can be arbitrary patterns.
+
+% FIXME (if we have time): how does this interact with recursive let?
+
+\begin{figure}
+\centering
+\begin{tabular}{ >{\centering\arraybackslash}m{14em} >{\centering\arraybackslash}m{8em}}
+Original & Unrolled \\
+\begin{minted}{haskell}
+let (a, b, c) = (x, y, z)
+in e
+\end{minted}
+& \begin{minted}{haskell}
+let a = x
+    b = y
+    c = z
+in e
+\end{minted}
 \end{tabular}
-\end{center}
+\caption{Tuple unrolling for \haskell{let}}
+\label{fig:patterns-tuple-unrolling-let}
+\end{figure}
 
-Since \haskell{b} and \haskell{c} are not being matched against a pattern, the programmer can choose to bind them inside the \haskell{case} or do so inside a \haskell{let}. In both cases, the meaning of the program is the same, but Ask-Elle is unable to unify them.
+\subsubsection{Case}
 
-In the case of lets, this already happens by splitting tuples into separate decls and letting the inliner do the rest.
+Tuple unrolling for \haskell{case} is a bit more complicated than for \haskell{let}, as the patterns may influence the control flow of the program. Figure \ref{fig:patterns-tuple-unrolling-case} shows on the left a \haskell{case} that illustrates the problem. It is clear that we cannot unroll the binding to \haskell{a}, as it is being used to choose which alternative to execute. Still, it is possible to unroll \haskell{b} and \haskell{c}, as shown on the right of the figure.
 
-\subsection{Case transformations}
+\begin{figure}
+\centering
+\begin{tabular}{ >{\centering\arraybackslash}m{14em} >{\centering\arraybackslash}m{8em} }
+Original & Unrolled \\
+\begin{minted}{haskell}
+case (a, b, c) of
+    ([], _, _) -> []
+    (x : xs, y, z) -> e
+\end{minted}
+& \begin{minted}{haskell}
+let y = b
+    z = c
+in case a of
+    [] -> []
+    x : xs -> e
+\end{minted}
+\end{tabular}
+\caption{Tuple unrolling for \haskell{case}}
+\label{fig:patterns-tuple-unrolling-case}
+\end{figure}
 
-\subsubsection{Single alternative}
+\subsection{Other case transformations}
 
-Show motivation
+Additional transformations to simplify \haskell{case} expressions include rewriting a single-alternative \haskell{case} as a \haskell{let} (Figure \ref{fig:patterns-rewrite-case-let}), removing the last alternative if it leads to \haskell{undefined} (Figure \ref{fig:patterns-remove-undefined-alt}) and removing unreachable alternatives (Figure \ref{fig:patterns-remove-unreachable-alt}).
 
-Rewrite as let
+In the latter case, we use a conservative heuristic. An alternative is unreachable if the previous alternative matches on a:
 
-\subsubsection{Undefined last alternative}
+\begin{itemize}
+\item Wildcard;
+\item Variable;
+\item Tuple of wildcards or variables.
+\end{itemize}
 
-Show motivation
+\begin{figure}
+\centering
+\begin{tabular}{>{\centering\arraybackslash}m{10em} >{\centering\arraybackslash}m{10em} }
+From & To \\
+\begin{minted}{haskell}
+case xs of
+    y:ys -> e
+\end{minted}
+& \begin{minted}{haskell}
+let (y:ys) = xs in e
+\end{minted}
+\end{tabular}
+\caption{Rewriting \haskell{case} as \haskell{let}}
+\label{fig:patterns-rewrite-case-let}
+\end{figure}
 
-Remove
+\begin{figure}
+\centering
+\begin{tabular}{>{\centering\arraybackslash}m{12em} >{\centering\arraybackslash}m{8em} }
+From & To \\
+\begin{minted}{haskell}
+case xs of
+    []   -> e
+    y:ys -> undefined
+\end{minted}
+& \begin{minted}{haskell}
+case xs of
+    [] -> e
+\end{minted}
+\end{tabular}
+\caption{Removing last alternative leading to \haskell{undefined}}
+\label{fig:patterns-remove-undefined-alt}
+\end{figure}
 
-\subsubsection{Unreachable alternatives}
-
-Show motivation
-
-Remove
+\begin{figure}
+\centering
+\begin{tabular}{>{\centering\arraybackslash}m{8em} >{\centering\arraybackslash}m{8em} }
+From & To \\
+\begin{minted}{haskell}
+case xs of
+    ys -> e
+    zs -> e'
+\end{minted}
+& \begin{minted}{haskell}
+case xs of
+    ys -> e
+\end{minted}
+\end{tabular}
+\caption{Removing unreachable alternative}
+\label{fig:patterns-remove-unreachable-alt}
+\end{figure}
 
 \section{Miscellaneous}
 
