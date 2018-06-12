@@ -16,7 +16,7 @@ import Data.List (partition, sortBy, sort)
 import Data.Map.Lazy (Map)
 import qualified Data.Map.Lazy as Map
 import Data.Maybe (fromMaybe)
-import System.FilePath (takeBaseName)
+import System.FilePath (takeBaseName, splitDirectories)
 --import System.Directory (listDirectory)
 import System.IO.Unsafe (unsafePerformIO)
 
@@ -174,17 +174,6 @@ normEx ex = do
     putStrLn "Below follows a list of submissions categorized by group"
     putStrLn "========================================================"
 
-    --putStrLn $ "Group sizes: " ++ show (sortWithDesc id $ map length $ Map.elems submissions)
-
-    -- Generate text file with the grouped student answers, for data analysis
-    -- Take the name of the exercise as name of the file
-
-    {-
-    let dataPath = "../data/round3/" ++ last (splitDirectories subDir)
-    let groups = sortWithDesc length $ Map.elems submissions -- :: [[_]]
-    writeFile dataPath $ unlines $ map (unlines . map takeBaseName) groups
-    -}
-
     -- Report the groups corresponding to the model solutions
     mapM_ (showSolution modelSolutions) (sortWithDesc (length . snd) $ Map.toList recognized)
     -- Report the rest of the groups
@@ -194,6 +183,11 @@ normEx ex = do
     putStrLn $ "Singleton groups (" ++ show (length singletons) ++ "):"
     let singletonNames = map (takeBaseName . head . snd ) singletons
     mapM_ (\name -> putStrLn $ "* " ++ name) $ sort singletonNames
+
+    -- Output data
+    let dataPath = "../data/aggressive/" ++ last (splitDirectories subDir)
+    let groups = sortWithDesc length $ Map.elems submissions -- :: [[_]]
+    writeFile dataPath $ unlines $ map (unlines . map takeBaseName) groups
 
     where
         showSolution :: Map Module String -> (Module, [String]) -> IO ()

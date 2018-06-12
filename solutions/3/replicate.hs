@@ -1,4 +1,5 @@
 printField :: Int -> String -> String
-printField n xs | b = replicate (n - length xs) ' '  ++ xs
-                | otherwise = xs ++ replicate (n - length xs) ' '
-            where b = all isDigit xs
+printField n xs
+    | all isDigit xs = padding ++ xs
+    | otherwise = xs ++ padding
+    where padding = replicate (n - length xs) ' '

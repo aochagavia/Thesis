@@ -20,10 +20,10 @@ Exercise 4 (108 valid):
 * Before: 61.1% (66) with 5 model solutions
 * After: 90.7% (98) with 3 model solutions
 
-Exercise 5 (111 valid):
+Exercise 5 (109 valid):
 
-* Before: 45% (50) with 4 model solutions
-* After: 96.4% (107) with 2 model solutions
+* Before: 45.9% (50) with 4 model solutions
+* After: 96.3% (105) with 2 model solutions
 
 Exercise 6 (101 valid):
 
@@ -32,10 +32,10 @@ Exercise 6 (101 valid):
 
 Exercise 7 (99 valid):
 
-* Before: 10.1% (10) with 3 model solutions
-* After: 74.7% (74) with 5 model solutions
+* Before: 14.3% (14) with 5 model solutions
+* After: 75.5% (74) with 5 model solutions
 
-Exercise 8 (99 valid):
+Exercise 8 (100 valid):
 
 * Before: 23.2% (23) with 5 model solutions
 * After: 87.9% (87) with 5 model solutions
@@ -156,10 +156,10 @@ Abstract functions:
 * `intercalate []` ==> `concat` (intercalate_concat, no auto)
 * `foldr (++) []` ==> `concat` (foldr_append)
 * `foldr (:)` ==> `flip (++)`(foldr_cons, no auto)
-* `concatMap (\x -> if cond x then [x] else [])` ==> `filter cond` (concat_map_filter, no auto)
+* `concatMap (\x -> if cond x then [e] else [])` ==> `filter cond` (concat_map_filter, no auto)
 * `!! 0` ==> `head` (zero_index)
 * `concat . map` ==> `concatMap` (concat_map)
-* `map head . transpose` ==> `head` (SKIP: too difficult to implement transpose)
+* `map head . transpose` ==> `head` (SKIP: too difficult to implement transpose, is this actually sound?)
 * `map id` ==> `id` (map_id, no auto)
 * `foldr f d []` ==> `d` (foldr_empty)
 
@@ -168,7 +168,7 @@ Apply laws:
 * `concatMap (\x -> [e])` ==> `map (\x -> e)` (e could be any expression, proved for [x] in concat_map_map, no auto)
 * `concatMap f . map g` ==> `concatMap (f . g)` (concat_map_comp, no auto)
 * `concatMap (flip (:) [])` ==> `id` (concat_map_flip, no auto)
-* `concat (replicate x [e])` ==> `replicate x e` (similar situation as in concat_map_map, proved for [42] in concat_replicate, no auto)
+* `concat (replicate x [e])` ==> `replicate x e` (similar situation as in concat_map_map, proved for [42] in concat_replicate, no auto) FIXME: this is wrong, we should prove it for any e
 * `map f (map g xs)` to `map (f . g) xs` (map_map_comp, no auto)
 * `mapMaybe (\x -> fmap f e) xs` ==> `map f $ mapMaybe (\x -> e) xs` (similar situation as in concat_map_map, proved for `Some 42` in map_maybe_fmap, no auto)
 * `mapMaybe (\x -> Just e)` ==> `map (\x -> e)` (similar situation as in concat_map_map, proved for 42 in map_maybe_just, no auto)

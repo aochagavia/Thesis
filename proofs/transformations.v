@@ -2,8 +2,7 @@
 
 Add LoadPath ".".
 
-Require Import CpdtTactics.
-
+Load CpdtTactics.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.Program.Basics.
@@ -111,11 +110,8 @@ Fixpoint take {T} n (xs : Streams.Stream T) : list T :=
 Lemma id_works : forall (T : Type) (x : T), id x = x.
   Proof. auto. Qed.
 
-Lemma cong_cons_1 : forall {T : Type} (x : T) xs ys, xs = ys -> x :: xs = x :: ys.
-  Proof. congruence. Qed.
-
-Lemma cong_cons_2 : forall {T : Type} (x : T) xs ys, x :: xs = x :: ys -> xs = ys.
-  Proof. congruence. Qed.
+Lemma cong_cons : forall {T} (x : T) xs ys, xs = ys <-> x :: xs = x :: ys.
+Proof. intros. split. congruence. congruence. Qed.
 
 Definition bad_style_map {T U} (f : T -> U) (xs : list T) : list U :=
   match xs with
@@ -124,7 +120,7 @@ Definition bad_style_map {T U} (f : T -> U) (xs : list T) : list U :=
   end.
 
 Theorem empty_base_case : forall {T U} (f : T -> U) xs, bad_style_map f xs = map f xs.
-  Proof. intros. induction xs. auto. auto. Qed.
+  Proof. intros. destruct xs. auto. auto. Qed.
 
 Theorem singleton_concat : forall {T : Type} (x : T) xs, [x] ++ xs = x :: xs.
   Proof. auto. Qed.
@@ -184,7 +180,7 @@ Theorem map_id : forall (T : Type) (xs : list T), map id xs = id xs.
     intros T xs.
     induction xs.
       auto.
-      simpl. rewrite id_works. rewrite id_works. apply (cong_cons_1 a (map id xs) xs). auto.
+      simpl. rewrite id_works. rewrite id_works. apply (cong_cons a (map id xs) xs). auto.
   Qed.
 
 Theorem foldr_empty : forall {A B : Type} (f : B -> A -> A) (acc : A),
@@ -195,8 +191,7 @@ Theorem concat_map_to_map : forall {T} (xs : list T), concatMap (fun x => [x]) x
   Proof. intros. induction xs.
     auto.
     simpl.
-      pose proof (cong_cons_1 a (concat (map (fun x => [x]) xs)) (map (fun x => x) xs)) as P.
-      apply P.
+      rewrite <- (cong_cons a (concat (map (fun x => [x]) xs)) (map (fun x => x) xs)).
       rewrite <- IHxs.
       rewrite (concat_map _ _).
       reflexivity.
@@ -213,10 +208,10 @@ Theorem concat_map_comp : forall {A B C} (f : B -> list C) (g : A -> B) (xs : li
 Theorem concat_map_flip : forall T (xs : list T), concatMap (flip cons []) xs = id xs.
   Proof. intros. induction xs.
     auto.
-    unfold id in IHxs. simpl. unfold id. apply cong_cons_1. auto.
+    unfold id in IHxs. simpl. unfold id. apply cong_cons. auto.
   Qed.
 
-Theorem concat_replicate : forall n, concat (replicate n [42]) = replicate n 42.
+Theorem concat_replicate : forall {T} n (x : T), concat (replicate n [x]) = replicate n x.
   Proof. intros. induction n.
     auto.
     simpl. congruence.
@@ -231,7 +226,7 @@ Theorem map_map_comp : forall {A B C} (f : B -> C) (g : A -> B) (xs : list A), m
 Theorem map_maybe_fmap : forall {A B} (f : nat -> B) (xs : list A), mapMaybe (fun x => fmap f (Some 42)) xs = map f (mapMaybe (fun x => Some 42) xs).
   Proof. intros. induction xs.
     auto.
-    simpl. apply cong_cons_1. auto.
+    simpl. rewrite <- cong_cons. auto.
   Qed.
 
 Theorem map_maybe_just : forall T (xs : list T), mapMaybe (fun x => Some 42) xs = map (fun x => 42) xs.
