@@ -5,82 +5,100 @@ After implementing the transformations, we measure the effectiveness of the new 
 
 \section{Submission coverage}
 
-FIXME: explain what this is
+Recall that Ask-Elle considers two programs to be semantically equivalent if their normal forms are syntactically similar. Additionally, a program is considered correct if it is equivalent to one of the model solutions.
 
-% THEN: add charts
+While it is possible to have two model solutions that share the same normal form, this does not increase the amount of programs that are recognized. In such a case, removing one of the model solutions would have no impact.
+
+If we only consider model solutions with different normal forms, we can associate each of them to a different cluster of programs. If the submissions to an exercise are grouped in 10 clusters, then having 10 model solutions (one per cluster) would recognize 100\% of programs.
+
+With \emph{submission coverage}, we measure the percentage of programs that are recognized using 5 model solutions or less. Figures \ref{fig:improvements-coverage-1} through \ref{fig:improvements-coverage-8} show graphs for each exercise. The circle shows the percentage of solutions originally recognized by Ask-Elle and the cross shows the same measurement after our improvements. Notice how adding model solutions offers diminishing returns.
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-1.png}
+\includegraphics[height=10cm]{graphs/coverage-1.png}
 \caption{Exercise 1 - Improvement in submission coverage}
 \label{fig:improvements-coverage-1}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-2.png}
+\includegraphics[height=10cm]{graphs/coverage-2.png}
 \caption{Exercise 2 - Improvement in submission coverage}
 \label{fig:improvements-coverage-2}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-3.png}
+\includegraphics[height=10cm]{graphs/coverage-3.png}
 \caption{Exercise 3 - Improvement in submission coverage}
 \label{fig:improvements-coverage-3}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-4.png}
+\includegraphics[height=10cm]{graphs/coverage-4.png}
 \caption{Exercise 4 - Improvement in submission coverage}
 \label{fig:improvements-coverage-4}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-5.png}
+\includegraphics[height=10cm]{graphs/coverage-5.png}
 \caption{Exercise 5 - Improvement in submission coverage}
 \label{fig:improvements-coverage-5}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-6.png}
+\includegraphics[height=10cm]{graphs/coverage-6.png}
 \caption{Exercise 6 - Improvement in submission coverage}
 \label{fig:improvements-coverage-6}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-7.png}
+\includegraphics[height=10cm]{graphs/coverage-7.png}
 \caption{Exercise 7 - Improvement in submission coverage}
 \label{fig:improvements-coverage-7}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=5cm]{graphs/coverage-8.png}
+\includegraphics[height=10cm]{graphs/coverage-8.png}
 \caption{Exercise 8 - Improvement in submission coverage}
 \label{fig:improvements-coverage-8}
 \end{figure}
 
-% \begin{itemize}
-%     \item Exercise 1: from 85.5\% with 3 model solutions to 99.1\% with 1 model solution.
-%     \item Exercise 2: from 36\% with 5 model solutions to 80.2\% with 5 model solutions.
-%     \item Exercise 3: from 54.4\% with 4 model solutions to 85.4\% with 3 model solutions.
-%     \item Exercise 4: from 61.1\% with 5 model solutions to 90.7\% with 3 model solutions.
-%     \item Exercise 5: from 45\% with 4 model solutions to 96.4\% with 2 model solutions.
-%     \item Exercise 6: from 7.9\% with 4 model solutions to 86.1\% with 2 model solutions.
-%     \item Exercise 7: from 14.1\% with 5 model solutions to 74.7\% with 5 model solutions.
-%     \item Exercise 8: from 23.2\% with 5 model solutions to 87.9\% with 5 model solutions.
-% \end{itemize}
-
 \section{Normalization effectiveness}
 
-FIXME: explain what this is
+As mentioned in \ref{sec:method-measurement-definitions}, we say that a given normalization procedure is more effective than a second one when it results in a lower amount of clusters for the same exercise. Our results show that, for all exercises, the new normalization is more effective than Ask-Elle's original one.
 
-% THEN: add charts
+Table \ref{tb:improvements-clusters} shows the amount of clusters per exercise. We also provide figures \ref{fig:improvements-clusters-1} through \ref{fig:improvements-clusters-8} that present the numbers in a more graphical way. Additionally, the figures show the differences in size of each cluster. Notice how the amount of clusters diminishes, while the size of the clusters grows.
+
+\begin{table}
+\centering
+\begin{tabular}{ m{6em} | m{6em} | m{6em} }
+Exercise & Before & After \\
+\hline
+1 & 15 & 2 \\
+\hline
+2 & 64 & 19 \\
+\hline
+3 & 43 & 16 \\
+\hline
+4 & 38 & 12 \\
+\hline
+5 & 43 & 6 \\
+\hline
+6 & 97 & 16 \\
+\hline
+7 & 84 & 28 \\
+\hline
+8 & 76 & 18
+\end{tabular}
+\caption{Improvement in normalization effectiveness}
+\label{tb:improvements-clusters}
+\end{table}
 
 \begin{figure}
 \centering
