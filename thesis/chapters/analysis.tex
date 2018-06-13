@@ -1,4 +1,4 @@
-\chapter{Analysis results and new transformations}
+\chapter{Analysis and new transformations}
 \label{sec:analysis-results}
 
 We observe multiple issues that cause problems to normalization. First of all, many students struggle with the concept of preconditions. Additionally, we identify several domain-specific issues involving lists, booleans, the \haskell{Maybe} type and patterns. When possible, we add new transformations to alleviate those issues.
@@ -768,7 +768,7 @@ Exercise & Conservative & Aggressive \\
 \label{tb:patterns-lifting-effectiveness}
 \end{table}
 
-\subsubsection{Defending aggressive pattern lifting}
+\subsubsection{In defense of aggressive pattern lifting}
 
 As mentioned above, aggressive pattern lifting is unsound. This means that it may change the meaning of a program, forcing a pattern match earlier than specified in the original code.
 

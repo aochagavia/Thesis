@@ -1,42 +1,62 @@
 \chapter{Conclusion}
 \label{sec:conclusion}
 
-Lorem ipsum
+In Section \ref{sec:research-questions}, we set out to find the cases in which Ask-Elle's normalization does not work as expected. Based on this knowledge, we aimed to improve the normalization procedure so it could handle a wider range of programs.
 
-% We discovered style and normalization problems. Both have a role in giving hints.
+\section{Results}
 
-% Note: we have an answer to question 1 (main style anti-patterns that are causing problems), but we are still missing an answer to question 2 (how to improve the current situation?). However, we have at least provided a building block towards solving question 2.
+The results from sections \ref{sec:analysis-results} and \ref{sec:improvements} are very positive. We discovered many cases in which normalization did not work as expected and achieved substantial improvements without resorting to advanced analysis techniques.
+
+In the domain of preconditions, we observed that they cause more problems than they solve, as unification becomes more challenging and confusion creeps among students. Due to the complexity of this domain, we only added a simple heuristic to remove unnecessary pattern matching on the empty list.
+
+Regarding lists, there were multiple issues, as expected by the nature of the assignment. We added a function abstraction heuristic, a transformation to desugar literals and a transformation to apply list laws.
+
+The domain of booleans also benefited from new transformations. We now apply boolean laws, reason about negation and rewrite guards as \haskell{if} expressions in more cases.
+
+Regarding the \haskell{Maybe} type, we added a function abstraction heuristic, a transformation to apply \haskell{Maybe} laws and a transformation to unfold the \haskell{maybe} function.
+
+The domain of patterns saw improvements with transformations to simplify patterns, unfold functions that pattern match, simplify tuple matching, simplify \haskell{case} expressions and lift nested patterns.
+
+Miscellaneous improvements include enabling beta reduction for whitelisted functions, enhancing eta reduction, specifying an order for arguments to commutative functions, abstracting and unfolding general-purpose functions and adding \haskell{flip} laws.
 
 \section{Future work}
+\label{sec:conclusion-future}
 
-Lorem ipsum
+While our results are very positive, there is still room for improvement. In the first place, we did not address all normalization issues and left out potentially useful transformations. Secondly, the interaction of the new transformations with Ask-Elle's stepwise feedback feature is unclear. Also, it would be worthwhile to measure the improvements with a different dataset. Finally, our experience with Coq proofs suggests that exploring alternative unification approaches may yield interesting results.
 
-% \subsection{Restrict to a subset of Haskell}
+\subsection{New transformations}
 
-% The alternatives that restrict the language, such as Miller's \cite{1991miller}, are too impractical to consider, as they would require rejecting valid Haskell programs. Futhermore, most research on enabling higher-order unification by restricting the language is done at the level of the lambda calculus, while Haskell provides much higher-level constructs. The interaction between those restrictions and Haskell's features is uncharted territory, out of the scope of this research.
+As mentioned above, we did not implement some transformations that would have probably resulted in improvements. The main factors that influenced this decision were time constraints and the expected low number of submissions that would benefit. In some cases, time constraints led us to leave out a transformation even though it would have had a bigger impact.
 
-% Bring this uncharted territory into view!
+\subsubsection{Precondition-aware program slicing}
+\label{sec:discussion-preconditions}
 
-% \subsection{Automated theorem proving}
+Preconditions are particularly problematic in the context of unification, as they allow programs with different semantics to be considered equivalent. A mechanism that performs unification up to preconditions would need to ignore the case in which the precondition does not hold.
 
-% Modify Ask-Elle in such a way that student programs are rewritten as Coq programs and attempt to unify them there. Try to create a custom tactic that solves the unification problem easily. Our current results show that this could be doable.
+Within Ask-Elle's normalization approach to unification, precondition-aware program slicing offers a promising solution. In many cases, program slicing should be able to identify the part of the program that is executed when the precondition does not hold. With this knowledge, a transformation could remove said part of the program. We call such a transformation semantics preserving up to preconditions.
 
-% [FIXME: cite Chlipala's *crush* tactic]
+\subsubsection{From checks to pattern matching}
 
-% \subsection{Stepwise feedback}
+Using checks instead of pattern matching does not necessarily alter the semantics of the program. Therefore it is possible to implement a semantics-preserving transformation to replace checks by pattern matching. Such a transformation would have been benefitial in the domain of lists and \haskell{Maybe}.
 
-% Quantify the impact of our transformations on Ask-Elle's ability to give hints. Right now, we know it is not ideal, since many of the transformations make little sense in the context of incomplete programs (e.g. you are writing an eta-expanded function, but the model solution is eta-reduced, there is no way they can unify until you finish writing your function)
+A typical case where this would be useful is accessing the head of a list after checking that it is not empty. While the idiomatic solution is to pattern match on the list, it is also possible to use the \haskell{null} function in combination with \haskell{head}.
 
-% Tell about the stuff Alejandro is doing
+Another case is accessing the value inside a \haskell{Maybe}. Again, one of the idiomatic solutions involves pattern matching, but it is also possible to use  the \haskell{isJust} function in combination with \haskell{fromJust}.
 
-% \subsection{Open style and normalization issues}
+In both cases, replacing checks by pattern matching would result in a lower number of clusters, thereby improving the effectiveness of the normalization procedure.
 
-% Reimplementing higher-order list functions using \texttt{[x]} as a base case instead of the empty list. While this is correct according to the specification of the assignment, it fails to recognize...
+\subsubsection{From imperative to functional style}
 
-% No solution for indexing
+One of the submissions to Exercise 2 reimplements \haskell{map} through list indexing and list comprehensions (see Figure \ref{fig:ex2-list-indexing} for details). While it would be straightforward to add an ad-hoc transformation that handles this case, it would be interesting to investigate the possibility of a transformation able to abstract multiple list functions from code that uses indexing.
 
-% Clearly, not all of the issues could be addressed. For instance, transforming a solution that uses list indexing into an idiomatic solution based is a non-trivial task. The same goes for reimplementations of recursive functions where the base case is \texttt{[x]} instead of the empty list. In general, we tried to avoid implementing transformations that would require more complex analysis than only syntactical, to stay within the current paradigm of Ask-Elle.
+\subsection{Stepwise feedback}
 
-% comparing two lambdas where one is eta reduced and the other is not... We could have come up with an advanced eta reduction mechanism, but did not... Future work!
+In Section \ref{sec:background}, we explain how programming strategies are closely related to normalization. Particularly, the mechanism to identify the step of the strategy where a program is involves normalizing the program. Since strategies are used to provide hints to incomplete programs, they involve normalizing incomplete programs as well.
 
-% Another one is the combination of foldr and map. Now I think about it, it should be possible to add a new transformation that deals with this... But the win is probably not worth the effort. Future work!
+Our research focuses on programs that do not contain any holes. Therefore, the improvements we achieve do not necessarily apply to stepwise feedback. For instance, if the model solution has the form \haskell{parseTable = map words}, then \haskell{parseTable xs = ?} does not unify with it, even though \haskell{parseTable xs = map words xs} does.
+
+An interesting approach is to integrate transformations themselves as parts of the strategy, which has the added benefit that they can be used to provide hints. For instance, a transformation that suggests replacing \haskell{concat} instead of \haskell{intercalate []} would help students with their style.
+
+\subsection{Alternative unification approaches}
+
+The proofs we wrote to ensure the soundness of the new transformations turned out to be surprisingly simple (see Appendix \ref{app:proofs}). This hints at the possibility of using automated theorem provers to unify Haskell programs. An interesting approach would be to automatically rewrite student programs as Coq programs and let Coq unify them, eventually making use of a custom tactic. Afterwards, the results could be compared against Ask-Elle's normalization-based approach.
