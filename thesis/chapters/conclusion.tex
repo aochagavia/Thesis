@@ -26,18 +26,17 @@ While our results are very positive, there is still room for improvement. In the
 
 \subsection{New transformations}
 
-As mentioned above, we did not implement some transformations that would have probably resulted in improvements. The main factors that influenced this decision were time constraints and the expected low number of submissions that would benefit. In some cases, time constraints led us to leave out a transformation even though it would have had a bigger impact.
+As mentioned above, we did not implement some transformations that would have probably resulted in improvements. The main factors that influenced this decision were time constraints and the expected low number of submissions that would benefit. In some cases, time constraints led us to leave out a transformation even though it would have had a bigger impact. Below we present some of these cases.
 
-\subsubsection{Precondition-aware program slicing}
-\label{sec:discussion-preconditions}
+\paragraph{Precondition-aware program slicing}
 
 Preconditions are particularly problematic in the context of unification, as they allow programs with different semantics to be considered equivalent. A mechanism that performs unification up to preconditions would need to ignore the case in which the precondition does not hold.
 
 Within Ask-Elle's normalization approach to unification, precondition-aware program slicing offers a promising solution. In many cases, program slicing should be able to identify the part of the program that is executed when the precondition does not hold. With this knowledge, a transformation could remove said part of the program. We call such a transformation semantics preserving up to preconditions.
 
-\subsubsection{From checks to pattern matching}
+\paragraph{From checks to pattern matching}
 
-Using checks instead of pattern matching does not necessarily alter the semantics of the program. Therefore it is possible to implement a semantics-preserving transformation to replace checks by pattern matching. Such a transformation would have been benefitial in the domain of lists and \haskell{Maybe}.
+Using checks instead of pattern matching does not necessarily alter the semantics of the program. Therefore it is possible to implement a semantics-preserving transformation to replace checks by pattern matching. Such a transformation would have been beneficial in the domain of lists and \haskell{Maybe}.
 
 A typical case where this would be useful is accessing the head of a list after checking that it is not empty. While the idiomatic solution is to pattern match on the list, it is also possible to use the \haskell{null} function in combination with \haskell{head}.
 
@@ -45,7 +44,7 @@ Another case is accessing the value inside a \haskell{Maybe}. Again, one of the 
 
 In both cases, replacing checks by pattern matching would result in a lower number of clusters, thereby improving the effectiveness of the normalization procedure.
 
-\subsubsection{From imperative to functional style}
+\paragraph{From list indexing to functional style}
 
 One of the submissions to Exercise 2 reimplements \haskell{map} through list indexing and list comprehensions (see Figure \ref{fig:ex2-list-indexing} for details). While it would be straightforward to add an ad-hoc transformation that handles this case, it would be interesting to investigate the possibility of a transformation able to abstract multiple list functions from code that uses indexing.
 
@@ -60,3 +59,7 @@ An interesting approach is to integrate transformations themselves as parts of t
 \subsection{Alternative unification approaches}
 
 The proofs we wrote to ensure the soundness of the new transformations turned out to be surprisingly simple (see Appendix \ref{app:proofs}). This hints at the possibility of using automated theorem provers to unify Haskell programs. An interesting approach would be to automatically rewrite student programs as Coq programs and let Coq unify them, eventually making use of a custom tactic. Afterwards, the results could be compared against Ask-Elle's normalization-based approach.
+
+\subsection{Additional proofs}
+
+When constructing proofs for the new transformations we made a choice to keep them simple. Particularly, we focused on transformations that can be expressed as rewrite rules in Coq's type system. This leaves out transformations that involve reasoning about variables and their scope, such as function inlining, dead code removal and pattern lifting. It would be interesting to develop a model in which these transformations can be proven correct.

@@ -4,7 +4,7 @@
 In Section \ref{sec:research-questions}, we set out to find the cases in which Ask-Elle's normalization does not work as expected. Based on this knowledge, we aim to improve the normalization procedure so it can handle a wider range of programs. We tackle the problem by iterating through the following steps:
 
 \begin{enumerate}
-    \item Measure the effectiveness\footnote{See Section \ref{sec:method-measurement-definitions} for a definition of \emph{effectiveness}.} of Ask-Elle's normalization, relative to a set of student programs;
+    \item Measure the effectiveness\footnote{Defined as \emph{the amount of clusters and their size, after normalizing the student submissions}. See Section \ref{sec:method-measurement-definitions} for context and more details.} of Ask-Elle's normalization, relative to a set of student programs;
     \item Analyze the set of student programs to reveal normalization shortcomings;
     \item Enhance Ask-Elle's normalization to resolve the discovered shortcomings.
 \end{enumerate}
@@ -89,8 +89,6 @@ Identifying shortcomings in the normalization procedure becomes straightforward 
 \item Pick a cluster that is smaller than the current one;
 \item Compare the normal forms of both clusters;
 \item Identify patterns that should have the same normal form, but do not;
-% FIXME: add this?
-% \item Identify higher-level problems that difficult normalization.
 \end{enumerate}
 
 As an example of a limitation we discovered, consider Exercise 1, which consists of implementing the function \texttt{parseTable}. Below we compare the normal forms of two clusters:
@@ -132,7 +130,7 @@ Ask-Elle has an eta-reduction transformation, which could simplify \mintinline{h
 
 Ask-Elle also has an inlining transformation, which replaces a variable usage by its definition. In the case of Cluster B, it seems sensible that \haskell{x2} could be replaced by \haskell{x1}, thereby getting rid of the \haskell{case}. However, given that \haskell{case} is a very expressive Haskell construct, the inlining transformation does not support it. Instead, it only supports \haskell{let} bindings.
 
-One possible solution is to add a normalization step that, for any \haskell{case} expression consisting of a single alternative, rewrites it in terms of \haskell{let}. In the case of Cluster B, this transformation would allow the inliner to simplify the code further in a later pass, which opens the door to eta reduction.
+One possible solution is to add a normalization step that, for any \haskell{case} expression consisting of a single alternative with only a var pattern, rewrites it in terms of \haskell{let}. In the case of Cluster B, this transformation would allow the inliner to simplify the code further in a later pass, which opens the door to eta reduction.
 
 \begin{figure}[H]
 \centering
@@ -159,11 +157,11 @@ We say that a transformation is sound when it is semantics-preserving. That is, 
 
 To increase our confidence in the soundness of the new transformations, we resort to formal proofs and property-based testing.
 
-\subsubsection{Formal proofs}
+\paragraph{Formal proofs}
 
-Throughout our research, we added around 75 transformations to Ask-Elle. Formalizing and proving that all of them are semantics-preserving would be a research project of its own. Still, we formalized and proved the soundness property for 39 of them in Coq.
+Throughout our research, we added around 60 transformations to Ask-Elle. Formalizing and proving that all of them are semantics-preserving would be a research project of its own. Still, we formalized and proved the soundness property for 31 of them in Coq.
 
-When choosing which transformations to prove we discarded trivial ones (i.e. specialized cases of beta-reduction and rewrite rules that are true by definition) and others that were too complex (e.g. anything involving scoped variables, like inlining or dead code removal). Instead, we focused on transformations that can be expressed as rewrite rules in Coq's type system.
+When choosing which transformations to prove we discarded trivial ones (e.g. rewrite rules that are true by definition) and others that were too complex (e.g. anything involving scoped variables, like inlining or dead code removal). Instead, we focused on transformations that can be expressed as rewrite rules in Coq's type system.
 
 As an example, consider a hypothetical cluster of programs in Exercise 1 that has the following normal form:
 
@@ -180,9 +178,9 @@ parseTable =
 \label{fig:method-bad-style-map}
 \end{figure}
 
-We can prove that removing the \haskell{case} expression is semantics-preserving, as shown in the \emph{empty\_base\_case} theorem:
+We can prove that removing the \haskell{case} expression preserves the semantics of the program, as shown in the \emph{empty\_base\_case} theorem on Figure \ref{fig:formal-proof-example}. The proof says that calling \haskell{map} inside a \haskell{case}, as in Figure \ref{fig:method-bad-style-map}, has the same semantics as calling it directly. The proof is surprisingly simple using Coq's built-in tactics, as is the case for most of the proofs we constructed. We distinguish two possible cases: \haskell{xs} is empty or it is not. In both cases, beta-reduction results in an equality that is true by reflexivity.
 
-\begin{figure}[H]
+\begin{figure}
 \centering
 \begin{minted}{coq}
 Definition bad_style_map
@@ -195,16 +193,19 @@ Definition bad_style_map
 
 Theorem empty_base_case : forall {T U} (f : T -> U) xs,
     bad_style_map f xs = map f xs.
-Proof. intros. destruct xs. auto. auto. Qed.
+Proof.
+    intros. (* Introduce variables f and xs *)
+    destruct xs. (* Case split on xs *)
+        auto. (* Trivially true when xs = [] *)
+        auto. (* Trivially true when xs = y :: ys *)
+Qed.
 \end{minted}
 \caption{Proving the soundness of a transformation.}
+\label{fig:formal-proof-example}
 \end{figure}
 
-The proof says that calling \haskell{map} inside a \haskell{case}, as in Figure \ref{fig:method-bad-style-map}, has the same semantics as calling it directly. The proof is surprisingly simple, as is the case for most of the proofs we wrote. We distinguish two possible cases: \haskell{xs} is empty or it is not. In both cases, applying beta-reduction results in an equality that is true by reflexivity.
-
-\subsubsection{Property-based testing}
-\label{sec:method-testing}
+\paragraph{Property-based testing}
 
 The original assignment had a basic test suite that we discovered to be insufficient, since some incorrect student solutions were not flagged as such. Therefore we developed our own test suite, specifying properties that each exercise should satisfy.
 
-By feeding the normalized programs to our test suite, we were able to verify that they still satisfy the properties required by the assignment. This proved to be an effective approach, as it catched a few bugs in the implementation of some transformations.
+By feeding the normalized programs to our test suite, we were able to verify that they still satisfy the properties required by the assignment. This proved to be an effective approach, as it caught a few bugs in the implementation of some transformations.

@@ -6,7 +6,7 @@ We observe multiple issues that cause problems to normalization. First of all, m
 \section{Preconditions}
 \label{sec:analysis-preconditions}
 
-Throughout the assignment, some functions are provided of preconditions to simplify their implementation. For instance, knowing that a list will never be empty means that the student no longer has to write additional code to handle that case. Contrary to the expectations, preconditions caused confusion among students, instead of leading to simpler code.
+Throughout the assignment, some functions come with preconditions to simplify their implementation. For instance, knowing that a list will never be empty means that a student no longer has to write additional code to handle that case. Contrary to the expectations, preconditions caused confusion among students, instead of leading to simpler code.
 
 \subsection{Explicit and implicit preconditions}
 
@@ -24,7 +24,7 @@ printField n s
 \label{fig:ex3-model-solution}
 \end{figure}
 
-Besides Exercise 3, no other exercise in the assignment mentions properties or preconditions explicitly. However, it is possible to deduce many preconditions from the context. Table \ref{tb:preconditions-implicit} presents a summary.
+Besides Exercise 3, no other exercise in the assignment mentions properties or preconditions explicitly, be it in a formal or informal way. However, it is possible to deduce many preconditions from the context, as summarized by Table \ref{tb:preconditions-implicit}. Note that, at this point, we are not interested in the exercises themselves, only in the kinds of preconditions they have. Table \ref{tb:preconditions-implicit} shows that the preconditions are well-defined, which means that Ask-Elle could potentially take them into account when normalizing programs.
 
 \begin{table}
 \centering
@@ -62,7 +62,7 @@ Notice that writing a submission to an exercise always involves specifying what 
 
 Many students add explicit checks to handle the case in which the precondition does not hold. Since the assignment does not specify what the function should return in such a case, students are allowed to write anything that seems sensible to them.
 
-\subsubsection{Differing semantics}
+\paragraph{Differing semantics}
 
 Figure \ref{fig:analysis-precondition-example} shows a submission to Exercise 3 where the student adds a guard checking for \haskell{n < length s}. On the right-hand side of the guard, we observe that the student truncates the string.
 
@@ -83,7 +83,7 @@ printField n s
 \label{fig:analysis-precondition-example}
 \end{figure}
 
-\subsubsection{Similar semantics}
+\paragraph{Similar semantics}
 
 In some cases, checking for the precondition did not result in different semantics relative to the model solution. Figure \ref{fig:analysis-precondition-similar-semantics} shows a function that explicitly checks for the precondition and returns \haskell{s} when the precondition does not hold.
 
@@ -102,7 +102,7 @@ printField n s
 \label{fig:analysis-precondition-similar-semantics}
 \end{figure}
 
-\subsubsection{Additional complications}
+\paragraph{Additional complications}
 
 Since a precondition is nothing more than a logical expression, it can be written in multiple ways. This offers even more challenges, because a precondition that is checked in the code could appear in any form as long as its meaning does not change. In fact, submissions to Exercise 3 sometimes check the precondition using its negation (\haskell{n < length s}), sometimes split the check in three guards (\haskell{n > length s}, \haskell{n == length s} or \haskell{otherwise}) and sometimes do the check in a completely different way.
 
@@ -149,11 +149,9 @@ parseTable xs = map words xs
 
 The assignment expects students to manipulate lists by combining list-specific functions. Therefore it is not surprising that many normalization problems come from the domain of lists.
 
-\subsection{Explicit recursion}
+\subsection{Function abstraction heuristic}
 
 Many students fail to use higher-order functions and resort to recursion instead, occasionally reimplementing a higher-order function without realizing. We identified reimplementations of \haskell{map}, \haskell{filter} and \haskell{zip}.
-
-\subsubsection{Function abstraction heuristic}
 
 As an example of a function where the student has reimplemented \haskell{map}, let us consider Figure \ref{fig:ex1-reimplementation-map}.  It is clear that the normal form does not match the model solution in Figure \ref{fig:ex1-model-solution}.
 
@@ -177,7 +175,7 @@ parseTable [] = []
 parseTable (x:xs) = words x : parseTable xs
 \end{minted}
 \bigskip
-\emph{Normalized version}
+\emph{Normalized version (before our improvements)}
 \begin{minted}{haskell}
 parseTable = fix (\rec xs -> case xs of
         [] -> []
@@ -188,11 +186,11 @@ parseTable = fix (\rec xs -> case xs of
 \label{fig:ex1-reimplementation-map}
 \end{figure}
 
-\subsubsection{Grouping recursive submissions in a single cluster}
+\subsection{Grouping recursive submissions in a single cluster}
 
-The function abstraction heuristic works well for simple functions such as \haskell{map}, \haskell{filter} and \haskell{zip}. However, it is not clear whether more complex cases like \haskell{foldr} can be abstracted by a general-purpose heuristic. In such cases, we give up on trying to remove recursion and focus instead on grouping recursive submissions in a single cluster.
+The function abstraction heuristic works well for simple functions such as \haskell{map}, \haskell{filter} and \haskell{zip}. However, it is not clear whether more complex cases like \haskell{foldr} can be abstracted by a general-purpose heuristic. In such cases, we give up on trying to remove recursion and hope that regular normalization succeeds in grouping recursive submissions in a single cluster.
 
-An example of this is Exercise 2. Figure \ref{fig:ex2-model-solutions} shows two model solutions, representing the cluster of submissions using \haskell{foldr} and the cluster using recursion.
+An example of this is provided by Exercise 2. Figure \ref{fig:ex2-model-solutions} shows two model solutions, representing the cluster of submissions using \haskell{foldr} and the cluster using recursion.
 
 This approach works great when the recursive submissions are somewhat similar to each other. In fact, the biggest cluster in Exercise 2 after our improvements consists of recursive submissions and accounts for 35\% of the total submissions.
 
@@ -212,7 +210,7 @@ printLine (x:xs) = "+" ++ replicate x '-' ++ printLine xs
 \label{fig:ex2-model-solutions}
 \end{figure}
 
-Still, there are always creative submissions that refuse to be normalized to the same cluster. Two common problems on this regard are caused by preconditions and by using guards instead of pattern matching. The submission to Exercise 2 in Figure \ref{fig:ex2-reimplementation-map-guards} features both:
+Still, there are always creative submissions that cannot be normalized to the same cluster. Two common problems here are caused by preconditions and by using guards instead of pattern matching. The submission to Exercise 2 in Figure \ref{fig:ex2-reimplementation-map-guards} features both:
 
 \paragraph{Preconditions}
 
@@ -220,7 +218,7 @@ As discussed in Section \ref{sec:preconditions-and-semantics}, preconditions in 
 
 In Exercise 2, the precondition of \haskell{printLine} is that the list cannot be empty. Because of the this, we see a variation between the solution in Figure \ref{fig:ex2-model-solutions} and Figure \ref{fig:ex2-reimplementation-map-guards}. The former returns \haskell{"+"} when the list is empty, while the latter crashes. This means that no amount of semantics-preserving transformations can bring both programs to the same normal form.
 
-% FIXME (if we have time): say that this also causes problems to the map heuristic, because some people reimplement map with a singleton list as base case
+% Maybe: say that this also causes problems to the map heuristic, because some people reimplement map with a singleton list as base case
 
 \paragraph{Guards and pattern matching}
 
@@ -247,7 +245,6 @@ printLine (w:ws)
 
 % \subsection{Redundant base case}
 
-% % Probably need a section about explicit and implicit preconditions
 % % All functions described in Assignment I take at least one list as a parameter. From those, all of them work on non-empty list
 
 % Since all functions in the assignment involve manipulating lists, pattern matching on the function parameters is common practice amont the students. Sometimes, this results in redundant pattern matching, as shown in Figure \ref{fig:ex1-redundant-base-case}.
@@ -301,7 +298,9 @@ Besides the issue of list and string literals, we observe that some students use
 
 \subsection{List laws}
 
-In many cases, the differences between two semantically-equivalent normal forms can be resolved by a simple rewrite rule. Based on the student submissions, we identify a series of laws and implement them as rewrite rules in Ask-Elle's normalization procedure. They are summarized in Table \ref{tb:list-laws}.
+In many cases, the differences between two semantically-equivalent normal forms can be resolved by a simple rewrite rule. Based on the student submissions, we identify a series of laws and implement them as rewrite rules in Ask-Elle's normalization procedure.
+
+Table \ref{tb:list-laws} shows the new transformations. Most of them are aimed to simplify the expressions on the left, but some of them are needed to impose an order when multiple representations are possible.
 
 \begin{table}
     \centering
@@ -342,7 +341,7 @@ In many cases, the differences between two semantically-equivalent normal forms 
 
 Besides these laws, we also identify slightly more complex ones that require reasoning at the scope level. We describe them below.
 
-\subsubsection{Simplify concatMap and mapMaybe}
+\subsubsection*{Simplify concatMap and mapMaybe}
 
 A pattern we observe in some student submissions is using \haskell{concatMap} when \haskell{map} would be sufficient. The same happens with the \haskell{mapMaybe} function. We add the transformations from Table \ref{tb:lists-simplifying-concatmap} to normalize both into \haskell{map}. Notice that \haskell{e} can be any Haskell expression and that it may contain references to \haskell{x}.
 
@@ -359,14 +358,15 @@ From & To \\
 \label{tb:lists-simplifying-concatmap}
 \end{table}
 
-\subsubsection{Turn concatMap into filter}
+\subsubsection*{Turn concatMap into filter}
 
 Another pattern that caused problems with normalization is reimplementing \haskell{filter} in terms of \haskell{concatMap}. The transformation in Figure \ref{fig:lists-rewrite-concatmap-as-filter} solves the problem. Again, \haskell{e} can be any Haskell expression and it may contain references to \haskell{x}.
 
 \begin{figure}
 \centering
-\begin{tabular}{ >{\centering\arraybackslash}m{10em} >{\centering\arraybackslash}m{10em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{10em} | >{\centering\arraybackslash}m{10em} }
 From & To \\
+\hline
 \begin{minted}{haskell}
 concatMap (\x ->
     if cond x
@@ -380,7 +380,7 @@ concatMap (\x ->
 \label{fig:lists-rewrite-concatmap-as-filter}
 \end{figure}
 
-% \subsubsection{Split mapMaybe}
+% \subsubsection*{Split mapMaybe}
 
 % This has no effect on our dataset
 
@@ -399,7 +399,7 @@ concatMap (\x ->
 
 A particularly problematic pattern we observe in a few student submissions is list indexing. While inoffensive on its own, list indexing becomes a normalization nightmare when used to write imperative-like code. Consider, for instance, the submission to Exercise 2 in Figure \ref{fig:ex2-list-indexing}. Even though the semantics are the same as a properly functional implementation (as in Figure \ref{fig:ex2-model-solutions}), the enormous syntactic differences make it very difficult for both to reach the same normal form.
 
-In the particular example we are considering, we can see that the list comprehension is reimplementing \haskell{map}. While it would be possible to write a transformation that applies to this particular case, it seems too ad-hoc. Also, the submissions that would benefit from this are too few compared to the effort of implementing such a general-purpose transformation. Therefore we leave this problem as a candidate for future work.
+In the particular example we are considering, we can see that the list comprehension is reimplementing \haskell{map}. While it would be possible to write a transformation that applies to this particular case, it seems too ad-hoc. Also, a generalized version of this transformation would benefit only a few submissions. Therefore we leave this problem as future work.
 
 % Future work / discussion
 
@@ -427,19 +427,22 @@ One of Ask-Elle's normalization steps rewrites guards as \haskell{if} expression
 \begin{figure}
 \centering
 \emph{Before}
+\noindent\rule{\linewidth}{0.5pt}
 \begin{minted}{haskell}
 printField n s
     | all isDigit s = padding ++ s
     | otherwise     = s ++ padding
     where padding = replicate (n - length s) ' '
 \end{minted}
-\smallskip
+\bigskip
 \emph{After}
+\noindent\rule{\linewidth}{0.5pt}
 \begin{minted}{haskell}
 printField n s = if all isDigit s then padding ++ s
                                   else s ++ padding
     where padding = replicate (n - length s) ' '
 \end{minted}
+\bigskip
 \caption{Total guards are rewritten as a top-level \haskell{if}}
 \label{fig:ex3-total-guards}
 \end{figure}
@@ -525,7 +528,7 @@ As an example of how this helps drive normalization further, consider Figure \re
 
 \section{Maybe}
 
-Exercises 7 and 8 rely on the \haskell{Maybe} type to handle edge cases. Students are expected to use functions from the standard library to manipulate \haskell{Maybe} values. This offers room for multiple issues.
+Exercises 7 and 8 rely on the \haskell{Maybe} type to handle edge cases. Students are expected to use functions from the standard library to manipulate \haskell{Maybe} values. This results in multiple issues.
 
 \subsection{Function abstraction through rewrite rules}
 
@@ -589,7 +592,9 @@ case m of
 
 \subsection{Unfolding the maybe function}
 
-Some student submissions use the \haskell{maybe} function instead of \haskell{case} when manipulating \haskell{Maybe} values. While abstracting \haskell{maybe} from \haskell{case} expressions is possible, unfolding \haskell{maybe} yields even less clusters when normalizing. Therefore we add an unfolding transformation to Ask-Elle's normalization, according to the definition of the function in \ref{fig:maybe-definition}.
+Some student submissions use the \haskell{maybe} function instead of \haskell{case} when manipulating \haskell{Maybe} values. While abstracting \haskell{maybe} from \haskell{case} expressions is possible, unfolding \haskell{maybe} yields even fewer clusters when normalizing. Therefore we add an unfolding transformation to Ask-Elle's normalization, according to the definition of the function in \ref{fig:maybe-definition}.
+
+The improvement caused by this transformation derives from its interaction with normalization passes related to patterns and \haskell{case} expressions. These transformations are described in Section \ref{sec:analysis-patterns}.
 
 % Is this a hint of a deeper principle? Unfold as long as there are no laws, abstract if you want to apply laws?
 
@@ -610,8 +615,9 @@ Another normalization problem is caused by the combination of \haskell{isJust} a
 
 \begin{figure}
 \centering
-\begin{tabular}{ >{\centering\arraybackslash}m{13em} >{\centering\arraybackslash}m{13em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{13em} | >{\centering\arraybackslash}m{13em} }
 isJust / fromJust & Idiomatic alternative \\
+\hline
 \begin{minted}{haskell}
 if isJust m
     then f (fromJust m)
@@ -627,7 +633,7 @@ case m of
 \label{fig:maybe-isjust-fromjust}
 \end{figure}
 
-Ideally, the normalization procedure should be able to rewrite the \haskell{isJust} pattern as a \haskell{case} expression. Such a transformation would apply to expressions in the form \haskell{if isJust m then e else e'}, replacing all occurrences of \haskell{fromJust m} in \haskell{e} by the unwrapped value. Because of its interaction with other transformations, adding this normalization step is more complex than it seems. Considering its expected low impact, we leave it as a candidate for future work.
+Ideally, the normalization procedure should be able to rewrite the \haskell{isJust} pattern as a \haskell{case} expression. Such a transformation would apply to expressions in the form \haskell{if isJust m then e else e'}, replacing all occurrences of \haskell{fromJust m} in \haskell{e} by the unwrapped value. Because of its interaction with other transformations, adding this normalization step is more complex than it seems. Considering its expected low impact, we leave it as future work.
 
 \subsection{Disguised isJust / fromJust combination}
 
@@ -650,11 +656,12 @@ In this case, a normalization step that transforms the expression into a \haskel
     \item Checking whether the magic value was returned can be done in multiple ways (e.g. students use \haskell{(==)}, \haskell{(/=)} and even \haskell{(>)}).
 \end{itemize}
 
-The first point implies that a semantics-preserving transformation must be able to prove that the value bound to \haskell{m} is never \haskell{Just (-1)}. The second point makes this problem even worse. For instance, if a student writes \haskell{x > (-1)} as the \haskell{if} condition, the normalizer would also need to prove that \haskell{m} can never contain any number lower than \haskell{-1}. Inferring this kind of knowledge requires advanced program analysis and is beyond the scope of this research.
+The first point implies that a semantics-preserving transformation must be able to prove that the value bound to \haskell{m} is never \haskell{Just (-1)}. The second point makes this problem even worse. For instance, if a student writes \haskell{x > (-1)} as the \haskell{if} condition, the normalizer would also need to prove that \haskell{m} can never contain any number lower than \haskell{-1}. Inferring this kind of knowledge requires more advanced program analysis and is beyond the scope of this research.
 
 \section{Patterns}
+\label{sec:analysis-patterns}
 
-Pattern matching is at the core of the Haskell language. Since patterns are very expressive, there are many different ways to write semantically equivalent programs. As we have seen before, this is a source of problems from a normalization perspective.
+Pattern matching is at the core of the Haskell language. Since patterns are very expressive, there are many different ways to write semantically equivalent programs. Again, this is a source of problems from a normalization perspective.
 
 \subsection{Pattern simplification}
 
@@ -665,7 +672,7 @@ Another useful simplification is to remove nested \emph{as} patterns. For instan
 \subsection{Unfold functions that pattern match}
 \label{sec:patterns-unfolding}
 
-Another source of syntactic differences are functions that use pattern matching on their parameters, with an undefined case when the pattern does not match the definition. This allows writing the same program by calling such functions or by using \haskell{case} or \haskell{let} inline. Table \ref{tb:patterns-unfolding} shows the transformations we add to improve normalization in these cases.
+Another source of syntactic differences are functions that pattern match on their parameters, with an undefined case when the pattern does not match the definition. This allows writing the same program by calling such functions or by using \haskell{case} or \haskell{let} inline. Table \ref{tb:patterns-unfolding} shows the transformations we add to improve normalization in these cases.
 
 \begin{table}
 \centering
@@ -714,20 +721,21 @@ Ideally, we would like to collapse nested pattern matches into one, which then b
 \label{fig:patterns-nested-matching}
 \end{figure}
 
-\subsubsection{Introducing pattern lifting}
+\paragraph{Introducing pattern lifting}
 
 Our proposed solution to the problem of nested pattern matching is \emph{pattern lifting}. This mechanism detects pattern matches on a variable that has been bound in a previous match. Then, it lifts the nested binding and merges it with the pattern it comes from.
 
 Consider again Figure \ref{fig:patterns-nested-matching} as an example. We can see that \haskell{xs} is bound in the second alternative of the \haskell{case} and that \haskell{y} is bound by matching on \haskell{xs}. This means we can lift the pattern where \haskell{y} is bound, thereby merging the \haskell{xs} and \haskell{(y : _)} patterns into one. As you can see on the right of the figure, the resulting pattern is \haskell{xs@(y : _)}.
 
-\subsubsection{Conservative and aggressive variants}
+\paragraph{Conservative and aggressive variants}
 
 Pattern lifting as described above turns out to be unsound, as shown by the counterexample in Figure \ref{fig:pattern-lifting-unsound}. In the original program, the head of the list is only taken if the list is not empty. However, pattern lifting moves the match upwards, thereby changing the semantics of the program. In the resulting code, an attempt to access the head of the list will be made even when the list is empty. We call this aggressive pattern lifting.
 
 \begin{figure}
 \centering
-\begin{tabular}{ >{\centering\arraybackslash}m{17em} >{\centering\arraybackslash}m{10em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{17em} | >{\centering\arraybackslash}m{10em} }
 Before & After \\
+\hline
 \begin{minted}{haskell}
 let xs = e
 in if xs == []
@@ -745,9 +753,9 @@ in if xs == []
 \label{fig:pattern-lifting-unsound}
 \end{figure}
 
-To prevent this problem, we define a conservative version of pattern lifting, which only supports irrefutable patterns. Irrefutable patterns are patterns that always match, like variables and wildcards. Also tuples containing other irrefutable patterns are themselves irrefutable. The same is valid for \emph{as} patterns. With this constraint, pattern lifting is always semantics-preserving.
+To prevent this problem, we define a conservative version of pattern lifting, which only supports irrefutable patterns. Irrefutable patterns are patterns that always match, like variables and wildcards. Also tuples containing other irrefutable patterns are themselves irrefutable. The same is valid for \emph{as} patterns. With this constraint, pattern lifting is always semantics-preserving\footnote{While laziness may be affected, the output of the program is not influenced.}.
 
-As expected, conservative pattern lifting results in a less effective normalization in comparison to aggressive pattern lifting. Table \ref{tb:patterns-lifting-effectiveness} shows the difference in the amounts of clusters depending on the pattern lifting mode used. Exercises where there is no difference are ignored.
+As expected, conservative pattern lifting results in a less effective normalization in comparison to aggressive pattern lifting. Table \ref{tb:patterns-lifting-effectiveness} shows the difference in the amounts of clusters depending on the pattern lifting mode used. In this comparison, all other transformations we add to Ask-Elle are enabled. Exercises where there is no difference are ignored.
 
 \begin{table}
 \centering
@@ -768,13 +776,15 @@ Exercise & Conservative & Aggressive \\
 \label{tb:patterns-lifting-effectiveness}
 \end{table}
 
-\subsubsection{In defense of aggressive pattern lifting}
+\paragraph{In defense of aggressive pattern lifting}
 
 As mentioned above, aggressive pattern lifting is unsound. This means that it may change the meaning of a program, forcing a pattern match earlier than specified in the original code.
 
 In the context of normalization, this unsoundness means that an incorrect program could have the same normal form as a correct one. Allowing unsound transformations could lead Ask-Elle to say that two programs are equivalent, when in fact they are not. This is the case illustrated by Figure \ref{fig:pattern-lifting-unsound}.
 
 We think, however, that an incorrect program with the necessary characteristics is very unlikely to pass a basic test suite. Such a program would need to pattern match too early on a value, leading to an easy to detect crash. In light of this, we treat aggressive pattern lifting as a sound transformation in practice, even though it is technically unsound.
+
+% Furthermore, laziness is not an issue in the first month of FP. Put this here or when explaining semantic equivalence
 
 % In fact, our test suite did not find any single program that would have caused problems to pattern lifting.
 
@@ -784,20 +794,21 @@ We oberve another normalization issue where students deconstruct and reconstruct
 
 \subsection{Tuple unrolling}
 
-Ask-Elle's normalization inlines bindings to names, not to patterns. A consequence of this is that it will fail to inline names that are bound inside a tuple pattern. Below we consider the problem from the perspectives of \haskell{let} and \haskell{case}, and we present a new transformation to solve it.
+Ask-Elle's normalization inlines bindings to names, not to patterns. A consequence of this is that it will fail to inline names that are introduced inside a tuple pattern. Below we consider the problem from the perspectives of \haskell{let} and \haskell{case}, and we present a new transformation to solve it.
 
-\subsubsection{Let}
+\paragraph{Let}
 
-In the case of \haskell{let}, Figure \ref{fig:patterns-tuple-unrolling-let} shows on the left a group of variables being bound inside a tuple pattern. On the right is an equivalent version, where the tuple has been unrolled into separate bindings, one for each variable. We enhance Ask-Elle with a normalization step that performs this transformation.
+In the case of \haskell{let}, Figure \ref{fig:patterns-tuple-unrolling-let} shows on the left a group of variables being introduced inside a tuple pattern. On the right is an equivalent version, where the tuple has been unrolled into separate bindings, one for each variable. We enhance Ask-Elle with a normalization step that performs this transformation.
 
 % Note that, in the figure, \haskell{a}, \haskell{b} and \haskell{c} can be arbitrary patterns.
 
-% FIXME (if we have time): how does this interact with recursive let?
+% Maybe: how does this interact with recursive let?
 
 \begin{figure}
 \centering
-\begin{tabular}{ >{\centering\arraybackslash}m{14em} >{\centering\arraybackslash}m{8em}}
+\begin{tabular}{ >{\centering\arraybackslash}m{14em} | >{\centering\arraybackslash}m{8em}}
 Original & Unrolled \\
+\hline
 \begin{minted}{haskell}
 let (a, b, c) = (x, y, z)
 in e
@@ -813,14 +824,15 @@ in e
 \label{fig:patterns-tuple-unrolling-let}
 \end{figure}
 
-\subsubsection{Case}
+\paragraph{Case}
 
 Tuple unrolling for \haskell{case} is a bit more complicated than for \haskell{let}, as the patterns may influence the control flow of the program. Figure \ref{fig:patterns-tuple-unrolling-case} shows on the left a \haskell{case} that illustrates the problem. It is clear that we cannot unroll the binding to \haskell{a}, as it is being used to choose which alternative to execute. Still, it is possible to unroll \haskell{b} and \haskell{c}, as shown on the right of the figure.
 
 \begin{figure}
 \centering
-\begin{tabular}{ >{\centering\arraybackslash}m{14em} >{\centering\arraybackslash}m{8em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{14em} | >{\centering\arraybackslash}m{8em} }
 Original & Unrolled \\
+\hline
 \begin{minted}{haskell}
 case (a, b, c) of
     ([], _, _) -> []
@@ -852,8 +864,9 @@ In the latter case, we use a conservative heuristic. An alternative is unreachab
 
 \begin{figure}
 \centering
-\begin{tabular}{>{\centering\arraybackslash}m{10em} >{\centering\arraybackslash}m{10em} }
+\begin{tabular}{>{\centering\arraybackslash}m{10em} | >{\centering\arraybackslash}m{10em} }
 From & To \\
+\hline
 \begin{minted}{haskell}
 case xs of
     y:ys -> e
@@ -868,8 +881,9 @@ let (y:ys) = xs in e
 
 \begin{figure}
 \centering
-\begin{tabular}{>{\centering\arraybackslash}m{12em} >{\centering\arraybackslash}m{8em} }
+\begin{tabular}{>{\centering\arraybackslash}m{12em} | >{\centering\arraybackslash}m{8em} }
 From & To \\
+\hline
 \begin{minted}{haskell}
 case xs of
     []   -> e
@@ -886,8 +900,9 @@ case xs of
 
 \begin{figure}
 \centering
-\begin{tabular}{>{\centering\arraybackslash}m{8em} >{\centering\arraybackslash}m{8em} }
+\begin{tabular}{>{\centering\arraybackslash}m{8em} | >{\centering\arraybackslash}m{8em} }
 From & To \\
+\hline
 \begin{minted}{haskell}
 case xs of
     ys -> e
@@ -912,7 +927,7 @@ Since many of our transformations involve abstracting functions, it is likely th
 
 \subsection{Order arguments in commutative functions}
 
-By definition, commutative functions return the same result independently of the order of their arguments. From a normalization perspective, this is a source of problems, because it results in programs which are semantically equivalent but syntactically different. For this reason, we add a transformation that enforces an order in the arguments passed to a commutative function.
+By definition, commutative functions like \haskell{(+)} or \haskell{(*)} return the same result independently of the order of their arguments. From a normalization perspective, this is a source of problems, because it results in programs which are semantically equivalent but syntactically different. For this reason, we add a transformation that enforces an order in the arguments passed to a commutative function. Again, laziness is not taken into consideration
 
 \subsection{Abstract and unfold functions}
 
@@ -941,8 +956,9 @@ Another transformation involving \haskell{flip} is switching the order of the pa
 
 \begin{figure}
 \centering
-\begin{tabular}{ >{\centering\arraybackslash}m{12em} >{\centering\arraybackslash}m{12em} }
+\begin{tabular}{ >{\centering\arraybackslash}m{12em} | >{\centering\arraybackslash}m{12em} }
 From & To \\
+\hline
 \haskell{flip (\x y -> e)} & \haskell{\y x -> e}
 \end{tabular}
 \caption{Swith the parameter order in a lambda when applying \haskell{flip}}
@@ -958,18 +974,21 @@ We enhance the eta-reduction algorithm by allowing it to insert \haskell{flip} w
 \begin{figure}
 \centering
 \emph{Before}
+\noindent\rule{\linewidth}{0.5pt}
 \begin{minted}{haskell}
 printLine xs =
     "+" ++ intercalate "+" (map (\x -> replicate '-' x) xs)
         ++ "+"
 \end{minted}
-\smallskip
+\bigskip
 \emph{After}
+\noindent\rule{\linewidth}{0.5pt}
 \begin{minted}{haskell}
 printLine xs =
     "+" ++ intercalate "+" (map (flip replicate '-') xs)
         ++ "+"
 \end{minted}
+\bigskip
 \caption{Flip-aware eta-reduction}
 \label{fig:misc-eta-flip}
 \end{figure}

@@ -5,18 +5,18 @@ Ask-Elle \cite{2017askelle} is a programming tutor designed to help students lea
 
 The exercises supported by Ask-Elle ask to implement functions. For instance, an exercise to teach basic concepts around lists and recursion could be to implement the \texttt{length} function.
 
-One of the strengths of Ask-Elle is its ability to provide feedback and hints based only on a model solution. The teacher writes a solution for the exercise and Ask-Elle does the rest. This is very convenient, because it minimizes the work to set up the exercises.
+One of the strengths of Ask-Elle is its ability to provide feedback and hints based only on a model solution. The teacher writes one or more solutions for the exercise and Ask-Elle does the rest. This is very convenient, because it minimizes the work to set up the exercises.
 
 \section{Ask-Elle in action}
 \label{sec:intro-askelle-example-session}
 
-To understand how Ask-Elle works, consider a hypothetical situation where a student follows Ask-Elle's hints until reaching the solution to the assignment. In our example, the task is to implement the function \haskell{double :: [Int] -> [Int]}, which multiplies each number in the list by two. We assume the exercise to have a single model solution, defined as \haskell{double = map (* 2)}.
+To understand how Ask-Elle works, consider a hypothetical situation where a student follows Ask-Elle's hints until reaching a solution to the assignment. In our example, the task is to implement the function \haskell{double :: [Int] -> [Int]}, which multiplies each number in a list by two. We assume the exercise to have a single model solution, defined as \haskell{double = map (* 2)}.
 
-Figure \ref{fig:interactive-session-double} shows a student's path to a solution. It starts with an empty program, which is refined step by step. Note that the hints have been generated from the model solution, as mentioned at the beginning of this chapter.
+Figure \ref{fig:interactive-session-double} shows a student's path to a solution. It starts with an empty program, which is refined step by step. \emph{Refinement} here refers to filling a hole in such a way that the resulting program is closer to a model solution. Ask-Elle hints are nothing more than refinement steps that have been generated from the model solution.
 
 \begin{figure}
 \begin{minted}{haskell}
--- Starting point
+-- Starting point (? represents a hole)
 ?
 
 -- Apply hint: Introduce the function double
@@ -35,12 +35,12 @@ double = map (* 2)
 \label{fig:interactive-session-double}
 \end{figure}
 
-\section{A fundamental limitation}
+\section{Deviations from the model solution}
 \label{sec:intro-fundamental-limitation}
 
-A fundamental limitation of Ask-Elle is its inability to produce hints for programs that \emph{deviate too much} from the model solution. In such cases, Ask-Elle returns an error message: \emph{You have drifted from the strategy in such a way that we can not help you any more}. With such a message, the only way forward is to start over from the very beginning (an empty program, represented as \texttt{?}) or to restore a previous version of the program known to be accepted by Ask-Elle.
+A fundamental limitation of Ask-Elle is its inability to produce hints for programs that \emph{deviate} from the model solution. In such cases, Ask-Elle returns an error message: \emph{You have drifted from the strategy in such a way that we can not help you any more}. With such a message, the only way forward is to start over from the very beginning (an empty program, represented as \texttt{?}) or to restore a previous version of the program known to be accepted by Ask-Elle.
 
-While the session from Figure \ref{fig:interactive-session-double} starts with the empty program, a student has the freedom to choose a different starting point. Consider, for instance, the case of a student who wants to implement a recursive version of \texttt{double}. Figure \ref{fig:limitations-recursive-double} shows said recursive implementation, which is semantically equivalent to the model solution, but has clear syntactical differences. Let us imagine that the student does not start with an empty program, but with a partial implementation of the function. How would an Ask-Elle session look like in this case? Figure \ref{fig:limitations-askelle-example-session} shows an expected yet unfortunate outcome: there are no hints available.
+While the session from Figure \ref{fig:interactive-session-double} starts with the empty program, a student has the freedom to choose a different starting point. Consider, for instance, the case of a student who wants to implement a recursive version of \texttt{double}. Figure \ref{fig:limitations-recursive-double} shows a recursive implementation, which is semantically equivalent to the model solution\footnote{For all possible inputs, the function returns the same result as the model solution. See Section \ref{sec:bg-program-equivalence} for more details.}, but has clear syntactical differences. Let us imagine that the student does not start with an empty program, but with a partial implementation of the function. What would an Ask-Elle session look like in this case? Figure \ref{fig:limitations-askelle-example-session} shows an expected yet unfortunate outcome: there are no hints available.
 
 The main way to deal with this limitation is by defining multiple model solutions. For instance, adding a recursive model solution would fix the problem in this concrete example. Still, this is not a scalable approach, since it requires a teacher to foresee all paths a student might follow. Furthermore, there are just too many ways to drift from the model solution in terms of syntax.
 
@@ -71,12 +71,12 @@ double (x:xs) = ?
 
 A typical use case for Ask-Elle is to aid teaching in an introductory course on functional programming. In that context, we have observed that Ask-Elle is often unable to handle student programs, regardless of whether the program is semantically equivalent to the model solution (see Chapter \ref{sec:analysis-results}). In practice, this means that Ask-Elle is in many cases failing to provide hints or to assess the correctness of a finished program.
 
-Our preliminary research shows that the root of the problem lies in limitations of Ask-Elle's normalization procedure (see Chapter \ref{sec:background} for details on the inner workings of Ask-Elle). This gives rise to the following questions:
+Previous research by Gerdes et al \cite{2010askelle, 2017askelle} shows that part of the problem lies in limitations of Ask-Elle's normalization procedure (see Chapter \ref{sec:background} for details on the inner workings of Ask-Elle). The authors suggest implementing additional semantics-preserving transformations as a possible solution to the problem. This gives rise to the following questions:
 
 \begin{enumerate}
     \item In which cases does normalization not work as expected?
     \item How can we improve Ask-Elle's normalization procedure?
 \end{enumerate}
 
-This proposal is structured as follows. Chapter \ref{sec:background} presents the necessary background knowledge about Ask-Elle's architecture. Afterwards, Chapter \ref{sec:related-work} refers to related work relevant to our research. Then, Chapter \ref{sec:methodology} explains our research methodology. Next, Chapter \ref{sec:analysis-results} identifies the main normalization issues and contributes solutions in most cases. Afterwards, Chapter \ref{sec:improvements} shows the measured results achieved through normalization improvements. Finally, Chapter \ref{sec:conclusion} summarizes our research and offers future work perspectives.
+This thesis is structured as follows. Chapter \ref{sec:background} presents the necessary background knowledge about Ask-Elle's architecture. Chapter \ref{sec:related-work} refers to related work relevant to our research. Chapter \ref{sec:methodology} explains our research methodology. Chapter \ref{sec:analysis-results} identifies the main normalization issues and contributes solutions in most cases. Chapter \ref{sec:improvements} shows the measured results achieved through normalization improvements. Finally, Chapter \ref{sec:conclusion} summarizes our research and offers future work perspectives.
 
