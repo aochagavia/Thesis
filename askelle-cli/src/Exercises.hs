@@ -44,7 +44,7 @@ subDir :: Exercise -> String
 subDir ex = "../fp-practicals-ask-elle/2017-assignment1-lists/exercise" ++ show (exNumber ex)
 
 solDir :: Exercise -> String
-solDir ex = "../solutions/" ++ show (exNumber ex)
+solDir ex = "./solutions/" ++ show (exNumber ex)
 
 typeSig :: Exercise -> String
 typeSig Ex1 = "[String] -> [[String]]"

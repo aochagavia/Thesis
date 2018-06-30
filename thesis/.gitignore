@@ -4,7 +4,7 @@
 *.toc
 *.gz
 *.log
-*.pdf
+thesis.pdf
 *.out
 *.fdb_latexmk
 *.fls
