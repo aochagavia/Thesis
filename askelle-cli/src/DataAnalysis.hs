@@ -28,19 +28,3 @@ exampleData =
     , ""
     , ""
     ]
-
-{-
-        bucketize :: [Int] -> [Int]
-        bucketize xs = let b1 = bucket (== 1)
-                           b2 = bucket (== 2)
-                           b3 = bucket (\x -> 2 < x && x <= 4)
-                           b4 = bucket (\x -> 4 < x && x <= 8)
-                           b5 = bucket (\x -> 8 < x && x <= 16)
-                           b6 = bucket (\x -> 16 < x && x <= 32)
-                           b7 = bucket (\x -> 32 < x && x <= 64)
-                           b8 = bucket (\x -> 64 < x)
-                       in  [b1, b2, b3, b4, b5, b6, b7, b8]
-            where
-                bucket :: (Int -> Bool) -> Int
-                bucket f = length $ filter f xs
-        -}

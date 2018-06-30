@@ -927,7 +927,7 @@ Since many of our transformations involve abstracting functions, it is likely th
 
 \subsection{Order arguments in commutative functions}
 
-By definition, commutative functions like \haskell{(+)} or \haskell{(*)} return the same result independently of the order of their arguments. From a normalization perspective, this is a source of problems, because it results in programs which are semantically equivalent but syntactically different. For this reason, we add a transformation that enforces an order in the arguments passed to a commutative function. Again, laziness is not taken into consideration
+By definition, commutative functions like \haskell{(+)} or \haskell{(*)} return the same result independently of the order of their arguments. From a normalization perspective, this is a source of problems, because it results in programs which are semantically equivalent but syntactically different. For this reason, we add a transformation that sorts the arguments passed to a commutative function. While advanced algorithms exist to unify expressions up to associativity and commutativity, our approach works well-enough in practice. Again, laziness is not taken into consideration
 
 \subsection{Abstract and unfold functions}
 

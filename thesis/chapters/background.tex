@@ -32,11 +32,11 @@ From these two steps, the second is a common operation on finite-state machines.
 
 Before diving into the concept of program unification we need to refer to program equivalence, which comes in three flavors.
 
-A basic form of program equivalence is \emph{syntactic equivalence}, according to which two programs are considered equivalent if their abstract syntax trees are similar. In its simplicity, this kind of equivalence has clear limitations. For instance, it does not account for differences in variable names or in the structure of the code.
+A basic form of program equivalence is \emph{syntactic equivalence}, according to which two programs are considered equivalent if their abstract syntax trees are equal. In its simplicity, this kind of equivalence has clear limitations. For instance, it does not account for differences in variable names or in the structure of the code.
 
-More advanced is \emph{semantic equivalence}, according to which two programs are considered equivalent if their output is similar for all possible inputs. In this case, differences in variable names are ignored, as well as differences in the structure of the code, as long as they have no influence in the output of the program. In the context of Haskell, this also means that it does not take laziness into account, unless it has an impact on the output.
+More advanced is \emph{semantic equivalence}, according to which two programs are considered equivalent if their output is similar for all possible inputs. In the context of Ask-Elle, programs are functions, inputs are function parameters and the input domain consists of all possible values of the parameter types. In this case, differences in variable names are ignored, as well as differences in the structure of the code, as long as they have no influence in the output of the program. For Haskell, this also means that it does not take laziness into account, unless it has an impact on the output.
 
-Finally, semantic equivalence \emph{up to preconditions} relaxes previous definition. Instead of requiring that two programs produce the same output for all possible inputs, this kind of equivalence considers only inputs that satisfy the preconditions of the program.
+Finally, semantic equivalence \emph{up to preconditions} relaxes previous definition. Instead of requiring that two programs produce the same output for all possible inputs, this kind of equivalence considers only inputs that satisfy the preconditions of the program. Note that we assume the same preconditions to hold for both programs.
 
 \section{Program unification}
 \label{sec:bg-unification}
